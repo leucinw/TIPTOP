@@ -1,0 +1,23 @@
+    1   960   960   OR6   224 #                 OR6, Oxygen in 6-membered cycle
+    2   961   961    OH   212 #                  OH, Oxygen of Hydroxyl group 
+    3   962   962    OH   212 #                  OH, Oxygen of Hydroxyl group 
+    4   963   963    OH   212 #                  OH, Oxygen of Hydroxyl group 
+    5   964   964    OH   212 #                  OH, Oxygen of Hydroxyl group 
+    6   965   965  C3R6    43 #                C3R6, sp3 carbon on 6-membered cycle
+    7   966   966  C3R6    43 #                C3R6, sp3 carbon on 6-membered cycle
+    8   967   967 C3O1R    49 #               C3O1R, sp3 carbon on 6-membered cycle bonded to 1 O on cycle
+    9   968   968  C3R6    43 #                C3R6, sp3 carbon on 6-membered cycle
+   10   969   969 C3O1R    49 #               C3O1R, sp3 carbon on 6-membered cycle bonded to 1 O on cycle
+   11   970   970   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   12   971   971   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   13   972   972   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   14   973   973   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   15   974   974   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   16   975   975  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   17   976   976  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   18   976   976  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   19   977   977    HO    17 #                  HO, H on Oxygen 
+   20   978   978    HO    17 #                  HO, H on Oxygen 
+   21   979   979    HO    17 #                  HO, H on Oxygen 
+   22   980   980    HO    17 #                  HO, H on Oxygen 
+   23   975   975  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-

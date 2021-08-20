@@ -1,0 +1,29 @@
+    1   870   870   CON    92 #                 CON, sp2 carbon, peptide bond (amide) 
+    2   871   871   C33    35 #                 C33, sp3 carbon with 3 Hydrogens
+    3   872   872   O=C   219 #                 O=C, Oxygen of carbonyl group, Amide, Formamide 
+    4   873   873  NC=O   179 #                NC=O, sp3 Nitrogen in amide
+    5   874   874  C3R6    43 #                C3R6, sp3 carbon on 6-membered cycle
+    6   875   875   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+    7   876   876 C3O1R    49 #               C3O1R, sp3 carbon on 6-membered cycle bonded to 1 O on cycle
+    8   877   877   OR6   224 #                 OR6, Oxygen in 6-membered cycle
+    9   878   878 C3O1R    49 #               C3O1R, sp3 carbon on 6-membered cycle bonded to 1 O on cycle
+   10   879   879   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   11   880   880  C3R6    43 #                C3R6, sp3 carbon on 6-membered cycle
+   12   881   881   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   13   882   882  C3R6    43 #                C3R6, sp3 carbon on 6-membered cycle
+   14   883   883   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   15   884   884    OH   212 #                  OH, Oxygen of Hydroxyl group 
+   16   885   885    OH   212 #                  OH, Oxygen of Hydroxyl group 
+   17   886   886   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   18   887   887    OH   212 #                  OH, Oxygen of Hydroxyl group 
+   19   888   888  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+   20   888   888  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+   21   888   888  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+   22   889   889    HN    24 #                  HN, H on Nitrogen 
+   23   890   890  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   24   891   891    HO    17 #                  HO, H on Oxygen 
+   25   892   892    HO    17 #                  HO, H on Oxygen 
+   26   893   893  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   27   893   893  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   28   894   894    HO    17 #                  HO, H on Oxygen 
+   29   890   890  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-

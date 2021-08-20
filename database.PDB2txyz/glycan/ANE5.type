@@ -1,0 +1,39 @@
+    1   921   921  CO=O    80 #                 C=O, sp2 carbon, carboxylic acid
+    2   922   922   O=C   219 #                 O=C, Oxygen of carbonyl group
+    3   923   923   OCO   213 #                 OCO, Oxygen of Carboxylic acid (protonated)
+    4   924   924 C3O1R    49 #               C3O1R, sp3 carbon on 6-membered cycle bonded to 1 O on cycle
+    5   925   925 C3O1R    49 #               C3O1R, sp3 carbon on 6-membered cycle bonded to 1 O on cycle
+    6   926   926   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+    7   927   927   OR6   224 #                 OR6, Oxygen in 6-membered cycle
+    8   928   928  C3R6    43 #                C3R6, sp3 carbon on 6-membered cycle
+    9   929   929  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   10   929   929  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   11   930   930  C3R6    43 #                C3R6, sp3 carbon on 6-membered cycle
+   12   931   931   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   13   932   932    OH   212 #                  OH, Oxygen of Hydroxyl group 
+   14   933   933    HO    17 #                  HO, H on Oxygen 
+   15   934   934  C3R6    43 #                C3R6, sp3 carbon on 6-membered cycle
+   16   935   935   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   17   936   936  NC=O   179 #                NC=O, sp3 Nitrogen in amide
+   18   937   937    HN    24 #                  HN, H on Nitrogen 
+   19   938   938   CON    92 #                 CON, sp2 carbon, peptide bond (amide) 
+   20   939   939   O=C   219 #                 O=C, Oxygen of carbonyl group, Amide, Formamide 
+   21   940   940   C33    35 #                 C33, sp3 carbon with 3 Hydrogens
+   22   941   941  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+   23   941   941  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+   24   941   941  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+   25   942   942   C31    33 #                 C31, sp3 carbon with 1 Hydrogen
+   26   943   943   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   27   944   944    OH   212 #                  OH, Oxygen of Hydroxyl group 
+   28   945   945    HO    17 #                  HO, H on Oxygen 
+   29   946   946   C31    33 #                 C31, sp3 carbon with 1 Hydrogen
+   30   947   947   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   31   948   948    OH   212 #                  OH, Oxygen of Hydroxyl group 
+   32   949   949    HO    17 #                  HO, H on Oxygen 
+   33   950   950   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   34   951   951  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   35   951   951  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   36   952   952    OH   212 #                  OH, Oxygen of Hydroxyl group 
+   37   953   953    HO    17 #                  HO, H on Oxygen 
+   38   954   954    HO    17 #                  HO, H on Oxygen 
+   39   955   955   HCH    19 #                 HCH, H on sp3 carbon, -CH-

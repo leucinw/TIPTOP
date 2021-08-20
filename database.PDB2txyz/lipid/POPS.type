@@ -1,0 +1,127 @@
+    1   799   799    N4   170 #                  N4, Nitrogen in Ammonium
+    2   800   800    H+    27 #                  H+, H on NH4+, R-NH3+, R2-NH2+, R3-NH+
+    3   800   800    H+    27 #                  H+, H on NH4+, R-NH3+, R2-NH2+, R3-NH+
+    4   800   800    H+    27 #                  H+, H on NH4+, R-NH3+, R2-NH2+, R3-NH+
+    5   801   801    CA    53 #                 CA, sp3 carbon on alanine C chain
+    6   802   802   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+    7   803   803 CO=O-    76 #                 C=O, sp2 carbon, carboxylate
+    8   804   804    O-   225 #                  O-, Oxygen of carboxinate
+    9   804   804    O-   225 #                  O-, Oxygen of carboxinate
+   10   805   805   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   11   806   806  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   12   806   806  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   13   719   719 PO4C2   276 #               PO4C2, Phosphor in Phosphate
+   14   722   722 OP-est   221 #              OP-est, Oxygen in phosphate (bonded to C)
+   15   720   720   O=P   220 #                 O=P, Oxygen of phosphate
+   16   720   720  O-P-   215 #                 O-P, Oxygen of phosphate, ionic state
+   17   721   721 OP-est   221 #              OP-est, Oxygen in phosphate (bonded to C)
+   18   723   723   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   19   724   724  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   20   724   724  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   21   725   725   C31    33 #                 C31, sp3 carbon with 1 Hydrogen
+   22   726   726   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   23   734   734 O-est   227 #               O-est, Oxygen of ester 
+   24   728   735  CO=O    80 #                 C=O, sp2 carbon, carboxylic ester
+   25   729   736   O=C   219 #                 O=C, Oxygen of carbonyl group (correct the O=C in ester)
+   26   730   737   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   27   731   738  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   28   731   738  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   29   732   732   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   30   733   733  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   31   733   733  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   32   727   734 O-est   227 #               O-est, Oxygen of ester 
+   33   735   735  CO=O    80 #                 C=O, sp2 carbon, carboxylic ester
+   34   736   736   O=C   219 #                 O=C, Oxygen of carbonyl group (correct the O=C in ester)
+   35   737   737   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   36   738   738  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   37   738   738  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   38   767   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   39   768   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   40   768   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   41   769   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   42   770   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   43   770   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   44   771   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   45   772   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   46   772   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   47   773   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   48   774   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   49   774   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   50   775   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   51   776   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   52   776   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   53   777   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   54   778   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   55   778   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   56   779   781   C31    33 #                 C31, sp3 carbon with 1 Hydrogen
+   57   780   782   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   58   781   781   C31    33 #                 C31, sp3 carbon with 1 Hydrogen
+   59   782   782   HCH    19 #                 HCH, H on sp3 carbon, -CH-
+   60   783   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   61   784   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   62   784   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   63   785   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   64   786   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   65   786   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   66   787   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   67   788   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   68   788   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   69   789   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   70   790   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   71   790   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   72   791   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   73   792   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   74   792   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   75   793   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   76   794   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   77   794   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   78   795   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   79   796   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   80   796   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   81   797   797   C33    35 #                 C33, sp3 carbon with 3 Hydrogens
+   82   798   798  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+   83   798   798  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+   84   798   798  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+   85   739   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   86   740   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   87   740   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   88   741   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   89   742   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   90   742   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   91   743   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   92   744   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   93   744   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   94   745   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   95   746   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   96   746   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   97   747   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+   98   748   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+   99   748   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  100   749   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+  101   750   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  102   750   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  103   751   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+  104   752   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  105   752   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  106   753   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+  107   754   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  108   754   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  109   755   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+  110   756   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  111   756   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  112   757   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+  113   758   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  114   758   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  115   759   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+  116   760   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  117   760   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  118   761   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+  119   762   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  120   762   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  121   763   795   C32    34 #                 C32, sp3 carbon with 2 Hydrogens
+  122   764   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  123   764   796  HCH2    20 #                HCH2, H on sp3 carbon, -CH2-
+  124   765   797   C33    35 #                 C33, sp3 carbon with 3 Hydrogens
+  125   766   798  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+  126   766   798  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
+  127   766   798  HCH3    21 #                HCH3, H on sp3 carbon, -CH3
