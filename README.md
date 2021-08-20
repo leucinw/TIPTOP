@@ -1,7 +1,6 @@
 # TIPTOP: From Tinker Input Preparing To Output Processing
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5227347.svg)](https://doi.org/10.5281/zenodo.5227347)
 
-
 ## Introduction
 
 This software package is providing a bunch of light tools for Tinker simulations. Currently the main functions include generation of force field parameters and tinker input structures. Each program can also be used individually to fulfill certain goals. Below is brief summaries of the programs:
@@ -19,3 +18,5 @@ The author hopes TIPTOP can make your Tinker simulations a little easier. It is 
 ```
 Liu C. 2021, TIPTOP: From Tinker Input Preparing To Output Processing, v1.0.0, Zenodo, doi: 10.5281/zenodo.5227347
 ```
+## Note
+Some of the functionality is not perfect yet.
