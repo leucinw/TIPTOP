@@ -1,5 +1,6 @@
 # TIPTOP
-**T**inker **I**nput **P**reparing & **T**o **O**utput **P**rocessing 
+
+**TIPTOP: From Tinker Input Preparing To Output Processing**
 
 This software package is providing a bunch of light tools for Tinker simulations, including generation of force field parameters and tinker input structures. Each Python program can also be used individually to fulfill certain goals. Below is brief summaries of the programs:
 
