@@ -32,8 +32,11 @@ import os
 import sys
 import argparse
 import subprocess
-import numpy as np 
+import numpy as np
+from pybel import *
+import concurrent.futures 
 from utilities.extrabasis import *
+from utilities.polarize import *
 
 # color
 RED = '\033[91m'
@@ -77,9 +80,6 @@ def f_GAUSSIAN(mode):
     pseudo = "Pseudo=Read "
     extra = ' '
     xyzref = optxyzfile
-  if mode in "DMA ESP".split():
-    if not os.path.isfile(optxyzfile):
-      subprocess.run("babel -ig09 %s -oxyz %s"%(optlogfile, optxyzfile), shell=True)
   atoms = np.loadtxt(xyzref, usecols=(0,), dtype='str', skiprows=2, unpack=True) 
   xs,ys,zs = np.loadtxt(xyzref, usecols=(1,2,3), dtype='float', skiprows=2, unpack=True) 
   mem  = f"%Mem={memory}GB \n"
@@ -135,8 +135,12 @@ def f_TINKER():
   gdmacmd = "gdma < %s > %s"%(gdmain, gdmaout)
   subprocess.run(gdmacmd,shell=True)
 
+  polars = getpolar(optxyzfile, os.path.join(rootdir, "database.ParmGen"))
   with open(poleditin, "w") as f:
-    f.write("\nA\n\n2\nY\n\nY\n")
+    f.write("\nA\n")
+    for p in polars:
+      f.write(f"{p} {polars[p]}\n")
+    f.write("\n2\nY\n\nY\n")
   if os.path.isfile(fname + ".key"):
     subprocess.run("rm -f %s.key"%fname, shell=True)
   poledit1 = "poledit.x 1 %s %s < %s" %(gdmaout, prmheader, poleditin)
@@ -268,12 +272,20 @@ def main():
 
   if (not os.path.isfile(optlogfile)):
     f_GAUSSIAN("OPT")
+  
+  modes = [] 
   opt_finished = "Normal termination" in open(optlogfile).readlines()[-1]
+  if (opt_finished) and not os.path.isfile(optxyzfile): 
+    subprocess.run("babel -ig09 %s -oxyz %s"%(optlogfile, optxyzfile), shell=True)
   if (opt_finished and not os.path.isfile(dmalogfile)):
-    f_GAUSSIAN("DMA")
+    modes.append("DMA") 
   if (opt_finished and not os.path.isfile(esplogfile)):
-    f_GAUSSIAN("ESP")
-
+    modes.append("ESP") 
+  jobs = []
+  with concurrent.futures.ProcessPoolExecutor() as executor:
+    results = [executor.submit(f_GAUSSIAN, mode) for mode in modes]
+    for f in concurrent.futures.as_completed(results):
+      jobs.append(f.result())
   if (qmonly == 0):
     dma_finished = "Normal termination" in open(dmalogfile).readlines()[-1]
     esp_finished = "Normal termination" in open(esplogfile).readlines()[-1]
