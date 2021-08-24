@@ -18,5 +18,9 @@ The author hopes TIPTOP can make your Tinker simulations a little easier. It is 
 ```
 Chengwen Liu, 2021, TIPTOP: From Tinker Input Preparing To Output Processing, Zenodo, doi: 10.5281/zenodo.5227347
 ```
+
+## Tutorial
+Run the individual program with `-h` option to get help information. Detailed tutorials for running each program is coming (not) soon.
+
 ## Note
 Some of the functionality is not perfect yet.
