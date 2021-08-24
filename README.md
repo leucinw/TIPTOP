@@ -16,7 +16,7 @@ This software package is providing a bunch of light tools for Tinker simulations
 ## Cite TIPTOP
 The author hopes TIPTOP can make your Tinker simulations a little easier. It is appreciated if you cite it in your publication.
 ```
-Chengwen Liu, 2021, TIPTOP: From Tinker Input Preparing To Output Processing, Zenodo, doi: 10.5281/zenodo.5227347
+Chengwen Liu. (2021). leucinw/TIPTOP: TIPTOP: From Tinker Input Preparing To Output Processing (v1.0.0). Zenodo. https://doi.org/10.5281/zenodo.5227347
 ```
 
 ## Tutorial
