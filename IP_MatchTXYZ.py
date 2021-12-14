@@ -36,6 +36,7 @@ SOFTWARE.
 
 import os
 import sys
+import argparse
 import numpy as np
 
 def readTXYZ(TXYZ):
@@ -125,17 +126,8 @@ def fingerprint(TXYZ):
   
   return fprints
 
-def main():
-  template = sys.argv[1]
-  dealwith = sys.argv[2]
-  if os.path.splitext(dealwith)[1] == ".xyz":
-    xyz = dealwith
-    dealwith = dealwith.replace("xyz", "txyz")
-    obstr = "obabel -ixyz %s -otxyz -O %s"%(xyz, dealwith)
-    os.system(obstr)
-  fname = dealwith + "_2"
-  fp1 = fingerprint(template)
-  fp2 = fingerprint(dealwith)
+def comparefingerprints(fp1, fp2):
+  match = True
   newidx = []
   for i in fp2:
     if i in fp1:
@@ -143,16 +135,44 @@ def main():
       newidx.append(idx)
       fp1[idx] = ' '
     else:
-      print(f"Error:{template} and {dealwith} could not match!")
-  
-  atoms, coord, _, _, connections =  readTXYZ(dealwith)
-  _, _, _,types, _ =  readTXYZ(template)
-  with open(fname, 'w') as f:
-    f.write("%3s\n"%len(atoms))
-    for i in range(len(newidx)):
-      idx = int(newidx[i])
-      f.write("%3s%3s%12.6f%12.6f%12.6f  %s   %s\n"%(i+1,atoms[i], coord[i][0], coord[i][1], coord[i][2], types[idx], '  '.join(connections[i])))
-  return 
+      match = False
+      break
+  return match, newidx
 
 if __name__ == "__main__":
-  main()
+  parser = argparse.ArgumentParser()
+  parser.add_argument('-t', dest = 'template', nargs='+', help = "Template txyz file(s)", required=True)  
+  parser.add_argument('-d', dest = 'dealwith', help = "File to deal-with, can be .xyz/.txyz/.pdb", required=True)  
+  args = vars(parser.parse_args())
+  templates = args["template"]
+  dealwith  = args["dealwith"]
+  
+  if os.path.splitext(dealwith)[1] == ".xyz":
+    xyz = dealwith
+    dealwith = dealwith.replace("xyz", "txyz")
+    obstr = "obabel -ixyz %s -otxyz -O %s"%(xyz, dealwith)
+    os.system(obstr)
+  if os.path.splitext(dealwith)[1] == ".pdb":
+    xyz = dealwith
+    dealwith = dealwith.replace("pdb", "txyz")
+    obstr = "obabel -ipdb  %s -otxyz -O %s"%(xyz, dealwith)
+    os.system(obstr)
+  
+  match = False
+  fname = dealwith + "_2"
+  for template in templates:
+    atoms1, _, _, _, _ =  readTXYZ(dealwith)
+    atoms2, _, _, _, _ =  readTXYZ(template)
+    if len(atoms1) == len(atoms2):
+      fp1 = fingerprint(template)
+      fp2 = fingerprint(dealwith)
+      match, newidx = comparefingerprints(fp1, fp2)
+      atoms, coord, _, _, connections =  readTXYZ(dealwith)
+      _, _, _,types, _ =  readTXYZ(template)
+      with open(fname, 'w') as f:
+        f.write("%3s\n"%len(atoms))
+        for i in range(len(newidx)):
+          idx = int(newidx[i])
+          f.write("%3s%3s%12.6f%12.6f%12.6f  %s   %s\n"%(i+1,atoms[i], coord[i][0], coord[i][1], coord[i][2], types[idx], '  '.join(connections[i])))
+  if not match: 
+    print(f"Could not match {templates} and {dealwith}")
