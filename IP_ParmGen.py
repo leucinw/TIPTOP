@@ -57,7 +57,7 @@ def f_GAUSSIAN(mode):
     chkfile = optchkfile
     extra = " IOP(5/13=1) "
     pseudo = ' '
-    xyzref = "input.xyz" 
+    xyzref = "initxyz.xyz" 
   if mode == "DMA":
     jt = "SP Density=MP2 "
     bf = "6-311G(d,p)"
@@ -126,7 +126,7 @@ def f_TINKER():
     subprocess.run(f"formchk {espchkfile}",shell=True)
   
   with open(gdmain, "w") as f:
-    f.write("Title %s gdmain\n\n"%fname)
+    f.write("Title %s gdmain\n\n"%prefix)
     f.write("File %s density MP2\n"%dmafchkfile)
     f.write("Angstrom\nAU\nMultipoles\nSwitch 0\nLimit 2\n")
     f.write("Punch %s\n"%dmapunchfile)
@@ -135,33 +135,33 @@ def f_TINKER():
   gdmacmd = "gdma < %s > %s"%(gdmain, gdmaout)
   subprocess.run(gdmacmd,shell=True)
 
-  polars = getpolar(optxyzfile, os.path.join(rootdir, "database.ParmGen"))
+  polars = getpolar(optxyzfile, os.path.join(rootdir, "database.ParmGen"), polarset)
   with open(poleditin, "w") as f:
     f.write("\nA\n")
     for p in polars:
       f.write(f"{p} {polars[p]}\n")
     f.write("\n2\nY\n\nY\n")
-  if os.path.isfile(fname + ".key"):
-    subprocess.run("rm -f %s.key"%fname, shell=True)
+  if os.path.isfile(prefix + ".key"):
+    subprocess.run("rm -f %s.key"%prefix, shell=True)
   poledit1 = "poledit.x 1 %s %s < %s" %(gdmaout, prmheader, poleditin)
   subprocess.run(poledit1, shell=True)
 
-  subprocess.run("echo 'parameters %s' | cat - %s.key > %s.key_2"%(prmheader, fname, fname), shell=True) 
-  valencecmd = "valence.x 1 %s.xyz %s %s.key_2 > %s"%(fname, optlogfile, fname, valenceout)
+  subprocess.run("echo 'parameters %s' | cat - %s.key > %s.key_2"%(prmheader, prefix, prefix), shell=True) 
+  valencecmd = "valence.x 1 %s.xyz %s %s.key_2 > %s"%(prefix, optlogfile, prefix, valenceout)
   subprocess.run(valencecmd, shell=True)
 
   if os.path.isfile(gridfile):
     subprocess.run("rm -rf %s"%gridfile, shell=True)
   if os.path.isfile(potfile):
     subprocess.run("rm -rf %s"%potfile, shell=True)
-  potential1 = "potential.x 1 %s.xyz -k %s.key_2"%(fname, fname)
+  potential1 = "potential.x 1 %s.xyz -k %s.key_2"%(prefix, prefix)
   subprocess.run(potential1, shell=True)
   cubegen0 = "cubegen 0 potential=MP2 %s %s -5 h < %s"%(espfchkfile, cubefile, gridfile) 
   subprocess.run(cubegen0, shell=True)
   potential2 = "potential.x 2 %s"%cubefile
   subprocess.run(potential2, shell=True)
-  with open(fname + ".key_3", "w") as f:
-    for line in open(fname+".key_2").readlines():
+  with open(prefix + ".key_3", "w") as f:
+    for line in open(prefix+".key_2").readlines():
       if "PARAMETERS" in line.upper():
         f.write(line)
         f.write("potential-offset 1.0\nfix-monopole\n")
@@ -170,12 +170,12 @@ def f_TINKER():
     for line in open(valenceout).readlines():
       if ("bond " in line) or ("angle " in line) or ("anglep " in line) or ("opbend " in line) or ("strbnd" in line) or ("vdw " in line) or ("torsion " in line):
         f.write(line[1:])
-  if os.path.isfile(fname + ".key_4"):
-    subprocess.run("rm -f %s.key_4"%fname, shell=True)
-  potential6 = "potential.x 6 %s.xyz -k %s.key_3 %s N 0.1 > %s.potfitlog" %(fname, fname, potfile, fname)
+  if os.path.isfile(prefix + ".key_4"):
+    subprocess.run("rm -f %s.key_4"%prefix, shell=True)
+  potential6 = "potential.x 6 %s.xyz -k %s.key_3 %s N 0.1 > %s.potfitlog" %(prefix, prefix, potfile, prefix)
   subprocess.run(potential6, shell=True)
   
-  lines = open(fname+".key_4").readlines()
+  lines = open(prefix+".key_4").readlines()
   natom = 0
   for line in lines:
     if "atom " in line:
@@ -185,43 +185,41 @@ def f_TINKER():
       break
   for n in range(idxmpole, natom*5+idxmpole, 1):
     lines[n] = "\n" 
-  with open(fname+".key_5", "w") as f:
+  with open(prefix+".key_5", "w") as f:
     for line in lines:
       if line != "\n":
         f.write(line)
   atomtyper = os.path.join(rootdir, "IP_AtomTyper.py")
-  subprocess.run("python %s -xyz %s.xyz -prm %s.key_5 -idx %s"%(atomtyper, fname, fname, atmidx), shell=True)
-  os.rename(f"{fname}.key_5_1", "final.prm")
-  os.rename(f"{fname}.xyz_1", "final.xyz")
+  subprocess.run("python %s -xyz %s.xyz -prm %s.key_5 -idx %s"%(atomtyper, prefix, prefix, atmidx), shell=True)
+  os.rename(f"{prefix}.key_5_1", "final.prm")
+  os.rename(f"{prefix}.xyz_1", "final.xyz")
   return
 
 def main():
   parser = argparse.ArgumentParser()
-  parser.add_argument('-input', dest = 'input', required=True, help='input file, can be xyz')  
+  parser.add_argument('-molecule', dest = 'molecule', required=True, help='input file in mol2 format')  
   parser.add_argument('-charge', dest = 'charge', default = "0", help='total charge')
   parser.add_argument('-spin',  dest = 'spin', default = "1", help='total spin')
   parser.add_argument('-index', dest = 'index', default = "401", help='amoeba atom-type starting index')
   parser.add_argument('-qmonly', dest = 'qmonly', default = 0, help='do QM only; 0 or 1', type=int)
+  parser.add_argument('-polarset', dest = 'polarset', default = "amoeba", help='element based `amoeba` polarizability or updated `amoeba+` set')
   parser.add_argument('-optonly', dest = 'optonly', default = 0, help='do QM opt only; 0 or 1', type=int)
   parser.add_argument('-disk',  dest = 'disk', default = "200", help='QM disk [unit GB]')
   parser.add_argument('-memory', dest = 'memory', default = "100", help='QM memory [unit GB]')
   args = vars(parser.parse_args())
   
-  infile = args["input"]
+  infile = args["molecule"]
   if os.path.isfile(f"{infile}"):
-    subprocess.run(f"cp {infile} {infile}.b",shell=True)
-    subprocess.run(f"mv {infile} input.xyz",shell=True)
+    subprocess.run(f"babel -imol2 {infile} -oxyz initxyz.xyz", shell=True) 
   else:
-    if os.path.isfile(f"{infile}.b"):
-      print(YELLOW + f"Warning: using {infile}.b as input file" + ENDC)
-      subprocess.run(f"cp {infile}.b input.xyz",shell=True)
-    else:
-      sys.exit(RED + f"Error: could not find {infile} or {infile}.b"+ ENDC)
+    sys.exit(RED + f"Error: could not find {infile} "+ ENDC)
 
-  global fname, inputxyz
-  fname, ext = os.path.splitext(infile)
-  inputxyz = "input.xyz"
- 
+  global prefix
+  prefix, ext = os.path.splitext(infile)
+  
+  global polarset
+  polarset = args["polarset"]
+
   global memory, disk
   memory = args["memory"]
   disk = args["disk"]
@@ -240,35 +238,35 @@ def main():
   nproc = "%Nproc=10\n"
 
   global cubefile, gridfile, potfile, xyzfile
-  cubefile = f"{fname}.cube"
-  gridfile = f"{fname}.grid"
-  potfile =  f"{fname}.pot"
-  xyzfile =  f"{fname}.xyz"
+  cubefile = f"{prefix}.cube"
+  gridfile = f"{prefix}.grid"
+  potfile =  f"{prefix}.pot"
+  xyzfile =  f"{prefix}.xyz"
 
   global optcomfile, optchkfile, optlogfile, optxyzfile
-  optcomfile =  f"{fname}-opt.com"
-  optchkfile =  f"{fname}-opt.chk"
-  optlogfile =  f"{fname}-opt.log"
-  optxyzfile =  f"{fname}-opt.xyz"
+  optcomfile =  f"{prefix}-opt.com"
+  optchkfile =  f"{prefix}-opt.chk"
+  optlogfile =  f"{prefix}-opt.log"
+  optxyzfile =  f"{prefix}-opt.xyz"
 
   global dmacomfile, dmachkfile, dmafchkfile, dmapunchfile, dmalogfile
-  dmacomfile  =  f"{fname}-dma.com"
-  dmachkfile  =  f"{fname}-dma.chk"
-  dmalogfile  =  f"{fname}-dma.log"
-  dmafchkfile  = f"{fname}-dma.fchk"
-  dmapunchfile = f"{fname}-dma.punch"
+  dmacomfile  =  f"{prefix}-dma.com"
+  dmachkfile  =  f"{prefix}-dma.chk"
+  dmalogfile  =  f"{prefix}-dma.log"
+  dmafchkfile  = f"{prefix}-dma.fchk"
+  dmapunchfile = f"{prefix}-dma.punch"
 
   global espcomfile, espchkfile, espfchkfile, esplogfile
-  espcomfile =  f"{fname}-esp.com"
-  espchkfile =  f"{fname}-esp.chk"
-  espfchkfile = f"{fname}-esp.fchk"
-  esplogfile =  f"{fname}-esp.log"
+  espcomfile =  f"{prefix}-esp.com"
+  espchkfile =  f"{prefix}-esp.chk"
+  espfchkfile = f"{prefix}-esp.fchk"
+  esplogfile =  f"{prefix}-esp.log"
 
   global gdmain, gdmaout, poleditin, valenceout
-  gdmain     =  f"{fname}.gdmain"
-  gdmaout    =  f"{fname}.gdmaout"
-  poleditin  =  f"{fname}.poleditin"
-  valenceout =  f"{fname}.valenceout"
+  gdmain     =  f"{prefix}.gdmain"
+  gdmaout    =  f"{prefix}.gdmaout"
+  poleditin  =  f"{prefix}.poleditin"
+  valenceout =  f"{prefix}.valenceout"
 
   global rootdir, prmheader
   rootdir = os.path.join(os.path.split(__file__)[0])
