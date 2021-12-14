@@ -32,7 +32,7 @@ import os
 import numpy as np
 from pybel import *
 
-def getpolar(xyz, databasedir):
+def getpolar(xyz, databasedir, polarset):
   polarDict = []
   fname, _ = os.path.splitext(xyz)
   for mol in readfile('xyz',xyz):
@@ -41,7 +41,10 @@ def getpolar(xyz, databasedir):
     natoms = len(mol.atoms)
     atoms = list(range(1, natoms+1)) 
     polarDict = dict.fromkeys(atoms, 0)
-    lines = open(os.path.join(databasedir, "amoebaplus_polar.prm")).readlines()
+    if polarset.lower() == "amoeba":
+      lines = open(os.path.join(databasedir, "amoeba_polar.prm")).readlines()
+    if polarset.lower() == "amoeba+":
+      lines = open(os.path.join(databasedir, "amoebaplus_polar.prm")).readlines()
     for line in lines:
       d = line.split()
       smt = d[0]
