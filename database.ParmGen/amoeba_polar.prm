@@ -1,0 +1,12 @@
+[#1]                             H     0.496 # H, Hydrogen
+[#1][c,n]                        Har   0.696 # H, H connected to aromatic
+[C]                              C     1.334 # C, Carbon
+[c]                              Car   1.750 # C, Aromatic carbon
+[#7]                             N     1.073 # N, 
+[#8]                             O     0.837 # O
+[#16]                            S     2.800 # S
+[#15]                            P     1.788 # P
+[#9]                             F     0.600 # F
+[#17]                            Cl    2.500 # Cl
+[#35]                            Br    3.595 # Br
+[#53]                            I     5.705 # I
