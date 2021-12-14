@@ -5,6 +5,7 @@
 import os
 
 def getXYZ(residue):
+  residue = residue.strip()
   cmd = f"sh protein.sh {residue}"
   os.system(cmd)
   tripep = residue + "3.xyz"
