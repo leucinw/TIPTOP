@@ -70,3 +70,4 @@
 [Br][a]                        Brar     4.132 # Br connected to aromatic atom
 [I][A]                       Inonar     5.424 # I connected to non-aromatic atom
 [I][a]                          Iar     5.482 # I connected to aromatic atom
+[P]                             P       1.432 # P 
