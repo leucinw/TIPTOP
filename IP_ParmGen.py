@@ -138,6 +138,7 @@ def f_TINKER():
   polars = getpolar(optxyzfile, os.path.join(rootdir, "database.ParmGen"), polarset)
   with open(poleditin, "w") as f:
     f.write("\nA\n")
+    #f.write("\nP\n")
     for p in polars:
       f.write(f"{p} {polars[p]}\n")
     f.write("\n2\nY\n\nY\n")
@@ -271,6 +272,7 @@ def main():
   global rootdir, prmheader
   rootdir = os.path.join(os.path.split(__file__)[0])
   prmheader  = os.path.join(rootdir, "database.ParmGen", "amoeba_header.prm")
+  #prmheader  = os.path.join(rootdir, "database.ParmGen", "amoebaplus21_header.prm")
 
   if (not os.path.isfile(optlogfile)):
     f_GAUSSIAN("OPT")
