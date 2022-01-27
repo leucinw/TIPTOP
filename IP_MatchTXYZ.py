@@ -129,23 +129,36 @@ def fingerprint(TXYZ):
 def comparefingerprints(fp1, fp2):
   match = True
   newidx = []
-  for i in fp2:
-    if i in fp1:
-      idx = fp1.index(i)
-      newidx.append(idx)
-      fp1[idx] = ' '
-    else:
-      match = False
-      break
+  if sortatom:
+    for i in fp1:
+      if i in fp2:
+        idx = fp2.index(i)
+        newidx.append(idx)
+        fp2[idx] = ' '
+      else:
+        match = False
+        break
+  else:
+    for i in fp2:
+      if i in fp1:
+        idx = fp1.index(i)
+        newidx.append(idx)
+        fp1[idx] = ' '
+      else:
+        match = False
+        break
   return match, newidx
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument('-t', dest = 'template', nargs='+', help = "Template txyz file(s)", required=True)  
+  parser.add_argument('-t', dest = 'template', help = "Template txyz file", required=True)  
   parser.add_argument('-d', dest = 'dealwith', help = "File to deal-with, can be .xyz/.txyz/.pdb", required=True)  
+  parser.add_argument('-s', dest = 'sortatom', help = "sort atoms in deal-with molecule", default=False, type=bool)  
   args = vars(parser.parse_args())
-  templates = args["template"]
+  template = args["template"]
   dealwith  = args["dealwith"]
+  global sortatom
+  sortatom  = args["sortatom"]
   
   if os.path.splitext(dealwith)[1] == ".xyz":
     xyz = dealwith
@@ -160,19 +173,21 @@ if __name__ == "__main__":
   
   match = False
   fname = dealwith + "_2"
-  for template in templates:
-    atoms1, _, _, _, _ =  readTXYZ(dealwith)
-    atoms2, _, _, _, _ =  readTXYZ(template)
-    if len(atoms1) == len(atoms2):
-      fp1 = fingerprint(template)
-      fp2 = fingerprint(dealwith)
-      match, newidx = comparefingerprints(fp1, fp2)
-      atoms, coord, _, _, connections =  readTXYZ(dealwith)
-      _, _, _,types, _ =  readTXYZ(template)
-      with open(fname, 'w') as f:
-        f.write("%3s\n"%len(atoms))
-        for i in range(len(newidx)):
-          idx = int(newidx[i])
-          f.write("%3s%3s%12.6f%12.6f%12.6f  %s   %s\n"%(i+1,atoms[i], coord[i][0], coord[i][1], coord[i][2], types[idx], '  '.join(connections[i])))
+  atoms1, coord1, _, types1, connections1 =  readTXYZ(dealwith)
+  atoms2, coord2, _, types2, connections2 =  readTXYZ(template)
+  if len(atoms1) == len(atoms2):
+    fp1 = fingerprint(template)
+    fp2 = fingerprint(dealwith)
+    match, newidx = comparefingerprints(fp1, fp2)
+    with open(fname, 'w') as f:
+      f.write("%3s\n"%len(atoms1))
+      for i in range(len(newidx)):
+        idx = int(newidx[i])
+        if sortatom:
+          f.write("%3s%3s%12.6f%12.6f%12.6f  %s   %s\n"%(i+1,atoms1[idx], coord1[idx][0], coord1[idx][1], coord1[idx][2], types2[i], '  '.join(connections2[i])))
+        else:
+          f.write("%3s%3s%12.6f%12.6f%12.6f  %s   %s\n"%(i+1,atoms1[i], coord1[i][0], coord1[i][1], coord1[i][2], types2[idx], '  '.join(connections1[i])))
   if not match: 
-    print(f"Could not match {templates} and {dealwith}")
+    print(f"Could not match {template} and {dealwith}")
+  for i in range(len(newidx)):
+    print(i, newidx[i])
