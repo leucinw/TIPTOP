@@ -3,7 +3,7 @@
 
 ## Introduction
 
-This software package is providing a bunch of light tools for Tinker simulations. Currently the main functions include generation of force field parameters and tinker input structures. Each program can also be used individually to fulfill certain goals. Below is brief summaries of the programs:
+This software package provides several light tools for Tinker simulations from input preparing to output processing. Each program can also be used individually for specific purposes. 
 
 * IP_AtomTyper.py: modify atom types in tinker xyz and key files 
 * IP_MatchTXYZ.py: assign atom types for an interested molecule by refering a reference molecule
@@ -12,6 +12,9 @@ This software package is providing a bunch of light tools for Tinker simulations
 * IP_PDB2txyz.py: generate a tinker xyz file based on a standard PDB structure
 * IP_TorDriver.py: do classical torsion scan at given QM level and fit AMOEBA torsional parameters
 * IP_TorParmGen.py: quickly assign AMOEBA torsional parameters without doing QM torsion scan
+* IP_ValenceInit.py: write the necessary bond/angle/strbnd/opbend/torsion parameters basd on a tinker xyz file 
+* OP_ARC2PDB.py: convert Tinker trajectory file (arc) to a PDB file
+* OP_PDBeditor.py: Edit a PDB file, supported function: trim, average
 
 ## Cite TIPTOP
 The author hopes TIPTOP can make your Tinker simulations a little easier. It is appreciated if you cite it in your publication.
