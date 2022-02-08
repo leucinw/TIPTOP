@@ -72,6 +72,11 @@ def ClassBasedTerms(pline, term):
         newclasses = [class_maps[d[1]], class_maps[d[2]]]
         newline = '  '.join([d[0], newclasses[0], newclasses[1], d[3], d[4]])
         f.write(newline + "\n")
+    elif term == 'bndcflux':
+      if set([d[1], d[2]]).issubset(set(class_maps.keys())):
+        newclasses = [class_maps[d[1]], class_maps[d[2]]]
+        newline = '  '.join([d[0], newclasses[0], newclasses[1], d[3]])
+        f.write(newline + "\n")
     elif term == "angle":
       if set([d[1], d[2], d[3]]).issubset(set(class_maps.keys())):
         newclasses = [class_maps[d[1]], class_maps[d[2]], class_maps[d[3]]]
@@ -81,6 +86,11 @@ def ClassBasedTerms(pline, term):
       if set([d[1], d[2], d[3]]).issubset(set(class_maps.keys())):
         newclasses = [class_maps[d[1]], class_maps[d[2]], class_maps[d[3]]]
         newline = '  '.join([d[0], newclasses[0], newclasses[1], newclasses[2], d[4], d[5]])
+        f.write(newline + "\n")
+    elif term == "angcflux":
+      if set([d[1], d[2], d[3]]).issubset(set(class_maps.keys())):
+        newclasses = [class_maps[d[1]], class_maps[d[2]], class_maps[d[3]]]
+        newline = '  '.join([d[0], newclasses[0], newclasses[1], newclasses[2], d[4], d[5], d[6], d[7]])
         f.write(newline + "\n")
     elif term == "strbnd":
       if set([d[1], d[2], d[3]]).issubset(set(class_maps.keys())):
@@ -117,7 +127,7 @@ def TypeBasedTerms(pline, term):
           if d[i] in type_maps.keys():
             groups.append(type_maps[d[i]])
           else:
-            groups.append('0')
+            groups.append('0.7000')
         groups.reverse()
         if groups != []:
           newline = '  '.join([d[0], newtypes, '  '.join(d[2:4])] + groups)
@@ -149,21 +159,18 @@ def TypeBasedTerms(pline, term):
           f.write(parameters[i])
     else:
       sys.exit(f"Error: {term} not supported by TypeBasedTerms()")
-  
   return
 
-def main():
+if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument('-xyz', dest = 'xyz', required=True, help="tinker xyz")
-  parser.add_argument('-prm', dest = 'prm', required=True, help="tinker key")
-  parser.add_argument('-idx', dest = 'idx', required=True, help="atom index", type=int)
-  parser.add_argument('-fun', dest = 'fun', default='AMOEBA', help="force field", type=str.upper, choices=['AMOEBA', 'AMOEBAPLUS'])
+  parser.add_argument('-xyz', dest = 'xyz', required=True, help="tinker xyz file")
+  parser.add_argument('-prm', dest = 'prm', required=True, help="tinker prm file")
+  parser.add_argument('-idx', dest = 'idx', required=True, help="starting atom index", type=int)
   args = vars(parser.parse_args())
   global xyz,prm,idx 
   xyz = args["xyz"]
   prm = args["prm"]
   idx = args["idx"]
-  fun = args["fun"]
 
   global type_maps
   global class_maps
@@ -178,16 +185,8 @@ def main():
     os.remove(newprm)
   
   rootdir = os.path.join(os.path.split(__file__)[0])
-  if fun == "AMOEBA":
-    head = open(os.path.join(rootdir, "database.ParmGen", "amoeba_header.prm")).readlines()
-  else:
-    head = open(os.path.join(rootdir, "database.ParmGen", "amoebaplus_header.prm")).readlines()
-  with open(newprm, "w") as f:
-    for h in head:
-      f.write(h)
-
   type_maps, class_maps, parameters = readINPUTS()
-  keywords = ["atom ", "bond ", "angle ", "anglep ", "strbnd ", "opbend ", "torsion ", "vdw ", "polarize ", "multipole "]
+  keywords = ["atom ", "bond ", "angle ", "anglep ", "strbnd ", "opbend ", "torsion ", "vdw ", "bndcflux", "angcflux", "polarize ", "multipole "]
   valwords = [k.split()[0] for k in keywords]
   keyvals = dict(zip(keywords,valwords))
   classBased_terms = dict(list(keyvals.items())[:-2]) 
@@ -201,7 +200,3 @@ def main():
     for t in typeBased_terms: 
       if t in p:
         TypeBasedTerms(p, typeBased_terms[t])
-  return
-
-if __name__ == "__main__":
-  main()
