@@ -81,11 +81,9 @@ def txyzpdb(pdblines, arclines):
     for line in open("mapping.lst").readlines():
       d = line.split()
       index_list[int(d[0])] = int(d[1])
-  else:
-    print(YELLOW + "Warning: assuming your pdb and arc have same atom order" + ENDC)
   
   # write a new pdb
-  with open("new.pdb", 'w') as f:
+  with open(out, 'w') as f:
     nframe = 1
     for i in range(len(arclines)):
       j = i%natom
@@ -104,13 +102,15 @@ def txyzpdb(pdblines, arclines):
   return True 
 
 if __name__ == "__main__":
-  global pbc,pdb,arc,natom
+  global pbc,pdb,arc,natom,out
   parser = argparse.ArgumentParser()
   parser.add_argument('-pdb', dest = 'pdb', help = "Template pdb file", required=True)  
+  parser.add_argument('-out', dest = 'out', help = "Output pdb file", required=True)  
   parser.add_argument('-arc', dest = 'arc', help = "Tinker trajectory file", required=True)  
   parser.add_argument('-pbc', dest = 'pbc', help = "PBC in arc. True/False", default=True, type=bool)  
   args = vars(parser.parse_args())
   pdb = args["pdb"]
+  out = args["out"]
   arc = args["arc"]
   pbc = args["pbc"]
   
@@ -118,15 +118,21 @@ if __name__ == "__main__":
     sys.exit(RED + f"Error: {arc} does not exist" + ENDC)
   if not os.path.isfile(pdb):
     sys.exit(RED + f"Error: {pdb} does not exist" + ENDC)
- 
+  
+  if os.path.isfile("mapping.lst"):
+    print(YELLOW + "Warning: using mapping.lst to change the atom orders" + ENDC)
+  else:
+    print(YELLOW + "Warning: assuming your pdb and arc have same atom order" + ENDC)
+  
   pdblines = readpdb(pdb)
   arclines, boxlines, natom = readarc(arc)
   # no. of natoms 
   natom1 = len(pdblines)
   if natom != natom1:
     sys.exit(RED + "Number of atoms in PDB and ARC not the same" + ENDC)
+  
   signal = txyzpdb(pdblines, arclines) 
   if signal:
-    print(GREEN + f"Your {arc} has been converted to new.pdb" + ENDC)
+    print(GREEN + f"Your {arc} has been converted to {out}" + ENDC)
   else:
     print(RED + f"Sorry, I could not convert your {arc} to pdb" + ENDC)
