@@ -82,6 +82,8 @@ def txyzpdb(pdblines, arclines):
       d = line.split()
       index_list[int(d[0])] = int(d[1])
   
+  print("arclines", len(arclines))
+  #print(k+index_list[j])
   # write a new pdb
   with open(out, 'w') as f:
     nframe = 1
@@ -107,7 +109,7 @@ if __name__ == "__main__":
   parser.add_argument('-pdb', dest = 'pdb', help = "Template pdb file", required=True)  
   parser.add_argument('-out', dest = 'out', help = "Output pdb file", required=True)  
   parser.add_argument('-arc', dest = 'arc', help = "Tinker trajectory file", required=True)  
-  parser.add_argument('-pbc', dest = 'pbc', help = "PBC in arc. True/False", default=True, type=bool)  
+  parser.add_argument('-pbc', dest = 'pbc', help = "PBC in arc. True/False", default=False, type=bool)  
   args = vars(parser.parse_args())
   pdb = args["pdb"]
   out = args["out"]
