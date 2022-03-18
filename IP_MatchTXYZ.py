@@ -29,9 +29,11 @@ SOFTWARE.
 #===================================
 
 
-''' Usage: python IP_MatchTXYZ.py template.txyz dealwith.(t)xyz 
-    ~ Assign the atom types of the template.txyz file to the dealwith txyz or xyz file.
-    ~ Especially suitable for the case that their atoms are different in order.
+''' Usage: python IP_MatchTXYZ.py -t template.txyz -d dealwith.(t)xyz 
+    ~ Assign the atom types of the template.txyz file to the dealwith txyz/xyz/pdb file.
+    ~ Especially suitable for the case that their atoms are in different order.
+    ~ It uses connectivity information only to match the structures
+    ~ make sure you can run obabel command before you use this program
 '''
 
 import os
@@ -189,5 +191,7 @@ if __name__ == "__main__":
           f.write("%3s%3s%12.6f%12.6f%12.6f  %s   %s\n"%(i+1,atoms1[i], coord1[i][0], coord1[i][1], coord1[i][2], types2[idx], '  '.join(connections1[i])))
   if not match: 
     print(f"Could not match {template} and {dealwith}")
-  for i in range(len(newidx)):
-    print(i, newidx[i])
+  
+  with open("mapping.lst", 'w') as f:
+    for i in range(len(newidx)):
+      f.write("%06d%06d\n"%(i, newidx[i]))
