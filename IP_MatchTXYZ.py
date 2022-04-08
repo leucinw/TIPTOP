@@ -193,7 +193,10 @@ if __name__ == "__main__":
           f.write("%3s%3s%12.6f%12.6f%12.6f  %s   %s\n"%(i+1,atoms1[i], coord1[i][0], coord1[i][1], coord1[i][2], types2[idx], '  '.join(connections1[i])))
   if not match: 
     print(f"Could not match {template} and {dealwith}")
+  else:
+    print(f"New file generated {dealwith}_2")
   
   with open("mapping.lst", 'w') as f:
     for i in range(len(newidx)):
-      f.write("%06d%06d\n"%(i, newidx[i]))
+      f.write("%6d%6d\n"%(i, newidx[i]))
+  print("The atom order mapping has been saved in mapping.lst")
