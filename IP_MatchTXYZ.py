@@ -155,7 +155,7 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('-t', dest = 'template', help = "Template txyz file", required=True)  
   parser.add_argument('-d', dest = 'dealwith', help = "File to deal-with, can be .xyz/.txyz/.pdb", required=True)  
-  parser.add_argument('-s', dest = 'sortatom', help = "sort atoms in deal-with molecule", default=False, type=bool)  
+  parser.add_argument('-s', dest = 'sortatom', help = "sort atoms according to template file", default=False, type=bool)  
   args = vars(parser.parse_args())
   template = args["template"]
   dealwith  = args["dealwith"]
@@ -163,10 +163,12 @@ if __name__ == "__main__":
   sortatom  = args["sortatom"]
   
   if os.path.splitext(dealwith)[1] == ".xyz":
-    xyz = dealwith
-    dealwith = dealwith.replace("xyz", "txyz")
-    obstr = "obabel -ixyz %s -otxyz -O %s"%(xyz, dealwith)
-    os.system(obstr)
+    lines = open(dealwith).readlines()
+    if not (int(lines[0].split()[0]) == len(lines)-1):
+      xyz = dealwith
+      dealwith = dealwith.replace("xyz", "txyz")
+      obstr = "obabel -ixyz %s -otxyz -O %s"%(xyz, dealwith)
+      os.system(obstr)
   if os.path.splitext(dealwith)[1] == ".pdb":
     xyz = dealwith
     dealwith = dealwith.replace("pdb", "txyz")
