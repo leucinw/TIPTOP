@@ -57,79 +57,72 @@ def prepare(pdb):
     os.system(f"babel {pdb} {pdb.replace('pdb', 'txyz')}")
   return
 
-''' split input pdb file into fragment pdbs 
-    solvent and ions are ignored
-'''
+''' split input pdb file into fragment pdbs ''' 
 def splitpdb(pdb):
-  resnames = []
-  resids = []
-  pdbs = []
   lines = open(pdb).readlines()
-  curresid = lines[0][22:26]
-  curresnm = lines[0][17:21]
-  pdbstr = []
-  pdbstrs = []
+  pdb_lines = {}
   number_res = 0
   number_atm = 0
+  pdbstrs = []
+  pdbs = []
+  tmp = [] 
+  txyzstr = []
   for line in lines:
-    if ("TER" not in line) and ("END" not in line) and (curresnm not in database['solvent']):
-      if (line[22:26] == curresid) and (curresnm == line[17:21]):
-        atom = line.split()[-1] 
-        x = float(line[30:38])
-        y = float(line[38:46])
-        z = float(line[46:54])
-        pdbstr.append(line)
-        pdbstrs.append(line)
-        number_atm += 1
-      else:
-        pdbname = "%04d"%number_res + f"_{curresnm.split()[0]}.pdb"
-        print(f"writing {pdbname}")
-        pdbs.append(pdbname)
-        with open(pdbname, 'w') as f:
-          for s in pdbstr:
-            f.write(s)
+    number_atm += 1
+    curresnm = line[17:21].strip()
+    if ("TER" not in line) and ("END" not in line) and ("REMARK" not in line) and ("CRYST" not in line) and ("MODEL" not in line) and ('WAT' not in line) and ('NA ' not in line):
+      pdbstrs.append(line)
+      curresid = line[22:26].strip()
+      
+      if curresnm + '_' + curresid not in tmp:
         number_res += 1
-        curresid = line[22:26]
-        curresnm = line[17:21]
-        pdbstr = [line,]
-        pdbstrs.append(line)
-        number_atm += 1
+        tmp.append(curresnm + '_' + curresid)
+        pdbname = "%04d"%number_res + f"_{curresnm.split()[0]}.pdb"
+        pdbs.append(pdbname)
+      
+      if pdbname not in pdb_lines.keys(): 
+        pdb_lines[pdbname] = [line]
+      else:
+        pdb_lines[pdbname] = pdb_lines[pdbname] + [line]
+    
+    # write solvent and ions if there are
+    if curresnm in database['solvent']:
+      x = float(line[30:38])
+      y = float(line[38:46])
+      z = float(line[46:54])
+      atom = line[13:17].strip()
+      if (atom == 'OH2') or (atom == 'OW'):
+        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 349 {number_atm+1} {number_atm+2}\n"
+        txyzstr.append(line_s)
+      elif (atom == 'H1') or (atom == 'HW1'):
+        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 350 {number_atm-1} \n"
+        txyzstr.append(line_s)
+      elif (atom == 'H2') or (atom == 'HW2'):
+        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 350 {number_atm-2} \n"
+        txyzstr.append(line_s)
+      elif atom in ['POT', 'K', 'K+']: 
+        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 353\n"
+        txyzstr.append(line_s)
+      elif atom in ['Na', 'NA', 'SOD']: 
+        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 352\n"
+        txyzstr.append(line_s)
+      elif atom in ['CLA', 'Cl', 'Cl-']: 
+        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 361\n"
+        txyzstr.append(line_s)
+      else:
+        sys.exit(f'Could not recognize {atom}')
+  
+  for pdbname in pdb_lines: 
+    with open(pdbname, 'w') as f:
+      pdbstr = pdb_lines[pdbname]
+      for s in pdbstr:
+        f.write(s)
+  
   with open('pdblist', 'w') as f:
     for s in pdbs:
       f.write(s + '\n')
 
-  # write solvent and ions if there are
-  txyzstr = []
-  for line in lines:
-    if ("TER" not in line):
-      curresnm = line[17:21].strip()
-      if curresnm in database['solvent']: 
-        x = float(line[30:38])
-        y = float(line[38:46])
-        z = float(line[46:54])
-        atom = line[13:17].strip()
-        if atom == 'OH2':
-          line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 349 {number_atm+1} {number_atm+2}\n"
-          txyzstr.append(line_s)
-          number_atm += 1
-        elif atom == 'H1':
-          line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 350 {number_atm-1} \n"
-          txyzstr.append(line_s)
-          number_atm += 1
-        elif atom == 'H2':
-          line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 350 {number_atm-2} \n"
-          number_atm += 1 
-          txyzstr.append(line_s)
-        elif atom in ['POT', 'K', 'K+']: 
-          line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 353\n"
-          txyzstr.append(line_s)
-          number_atm += 1
-        elif atom in ['CLA', 'Cl', 'Cl-']: 
-          line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 361\n"
-          txyzstr.append(line_s)
-          number_atm += 1
-        else:
-          sys.exit(f'Could not recognize {atom}')
+  
   txyzname = "solvent.txyz"
   natom = len(txyzstr)
   if natom > 0: 
@@ -138,7 +131,7 @@ def splitpdb(pdb):
         f.write(s)
 
   with open('bio.pdb', 'w') as f:
-    for s in pdbstrs[:-1]:
+    for s in pdbstrs:
       f.write(s)
   return 
 
@@ -177,11 +170,28 @@ def pdbtxyz(pdb):
         if isGlycan:
           os.system(f"python {rootdir}/IP_MatchTXYZ_Glycan.py {template} {pdb.split('.')[0]}")
         if (not isGlycan):
-          os.system(f"python {rootdir}/IP_MatchTXYZ.py -t {template} -d {pdb}")
+          cmdstr = f"python {rootdir}/IP_MatchTXYZ.py -t {template} -d {pdb}"
+          os.system(cmdstr)
+            
+  return 
+
+''' check the correctness of pdb and txyz mapping'''
+def check_pdb_xyz(pdblist, xyzlist):
+  pdbs = list(np.loadtxt(pdblist, usecols=(0), dtype='str', unpack=True))
+  xyzs = list(np.loadtxt(xyzlist, usecols=(0), dtype='str', unpack=True))
+  npdb = len(pdbs)
+  nxyz = len(xyzs)
+  if npdb == nxyz:
+    for pdb, xyz in zip(pdbs, xyzs):
+      plines = open(pdb).readlines()
+      xlines = open(xyz).readlines()
+      if len(plines) != len(xlines)-1:
+        sys.exit(f"Error: {pdb} not the same as {xyz}")
   return 
 
 ''' generate the final txyz '''
 def connect(txyz, txyzs):
+  check_pdb_xyz('pdblist', 'txyzlist')
   fname = txyz + "_2"
   alltypes = []
   for t in txyzs:
@@ -191,8 +201,6 @@ def connect(txyz, txyzs):
     else:
       alltypes += list(types)
   lines = open(txyz).readlines()
-  if (len(lines)-1) != len(alltypes):
-    sys.exit("Error: number of atoms not the same!!!")
   
   if os.path.isfile('solvent.txyz'):
     nlines = len(open('solvent.txyz').readlines())
