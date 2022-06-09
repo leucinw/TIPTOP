@@ -50,17 +50,12 @@ def getXYZ(residue):
   os.system(f"rm {tripep}")     
   return
 
-
-def main():
-
+if __name__ == "__main__":
   ## amino acids in amoebabio18.prm
-  residues = \
-  [ 'GLY', 'ALA', 'VAL', 'LEU', 'ILE', 'SER', 'THR', 'CYS', 'LYD', 'PRO', \
+  #residues = \
+  #[ 'GLY', 'ALA', 'VAL', 'LEU', 'ILE', 'SER', 'THR', 'CYS', 'LYD', 'PRO', \
     'PHE', 'TYR', 'TRP', 'HIS', 'ASP', 'ASN', 'GLU', 'GLN', 'MET', 'LYS', \
     'ARG', 'ORN', 'TYD', 'HID', 'HIE', 'HIP', 'ASH', 'GLH', ] # leave CYX, AIB, CYD out for now
+  #residues = ['CYD']
   for residue in residues[0:]:
     getXYZ(residue)
-  return
-
-if __name__ == "__main__":
-  main()

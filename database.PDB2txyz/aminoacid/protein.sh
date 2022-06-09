@@ -1,6 +1,5 @@
 #!/bin/bash
-#export PATH=/home/liuchw/Softwares/tinkers/tinker8.7-gnu:$PATH
-export PATH=$TINKER89:$PATH
+export PATH=$TINKER8C8:$PATH
 RES=$1
 cp template.in protein.in
 rm -rf $RES*

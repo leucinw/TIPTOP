@@ -3,3 +3,6 @@ NGL: ASN for glyco- bond: N-link
 CGL: CYS for glyco- bond: S-link
 TGL: THR for glyco- bond: O-link
 SGL: SER for glyco- bond: O-link
+
+# 2022
+THP2: phosphorylated
