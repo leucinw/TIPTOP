@@ -31,7 +31,10 @@ SOFTWARE.
 import os
 import sys
 import numpy as np
-from pybel import *
+try:
+  from openbabel import pybel 
+except:
+  import pybel
 import networkx as nx
 
 # Print the zero parameters for bond/angle/strbnd/opbend/torsion
@@ -132,7 +135,7 @@ def print_initial_parameters(txyz):
   
   # find the tri- center
   tricentertypes = []
-  for mol in readfile("txyz", txyz):
+  for mol in pybel.readfile("txyz", txyz):
     natoms = len(mol.atoms)
     for i in range(natoms):
       hyb = mol.atoms[i].hyb
