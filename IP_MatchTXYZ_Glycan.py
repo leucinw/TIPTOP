@@ -32,7 +32,7 @@ import os
 import sys
 import numpy as np
 
-def main():
+if __name__ == "__main__":
   template = sys.argv[1]
   fname = sys.argv[2]
   rootdir = os.path.join(os.path.split(__file__)[0])
@@ -55,7 +55,3 @@ def main():
       d = lines[i].split()
       line = ' '.join(d[:5] + [types[i-1]] + d[6:]) + "\n"
       f.write(line)
-  return
-
-if __name__ == "__main__":
-  main()
