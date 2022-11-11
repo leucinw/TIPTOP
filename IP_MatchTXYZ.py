@@ -30,7 +30,7 @@ SOFTWARE.
 
 
 ''' Usage: python IP_MatchTXYZ.py -t template.txyz -d dealwith.(t)xyz 
-    ~ Assign the atom types of the template.txyz file to the dealwith txyz/xyz/pdb file.
+    ~ Assign the atom types of the template.txyz file to the dealwith txyz/xyz/pdb/sdf file.
     ~ Especially suitable for the case that their atoms are in different order.
     ~ It uses connectivity information only to match the structures
     ~ make sure you can run obabel command before you use this program
@@ -71,7 +71,7 @@ def fingerprint(TXYZ):
     constr = ''.join(sorted(con_ele)) 
     atom_con_dict[atom] = constr
 
-  level = 5 
+  level = 6 
   if level > 1:
     atom_con_dict2 = {}
     for atom, con in zip(atoms,connections):
@@ -122,9 +122,21 @@ def fingerprint(TXYZ):
       newstr = ''.join([atom_con_dict4[c] for c in cons])
       atom_con_dict5[atom] = ''.join(sorted(newstr))
   
+  if level > 5:
+    atom_con_dict6 = {}
+    for atom, con in zip(atoms,connections):
+      eles = []
+      cons = []
+      for c in con:
+        eles.append(atom_ele_dict[c])
+        cons.append(c)
+      cons = [x for _,x in sorted(zip(eles,cons))]
+      newstr = ''.join([atom_con_dict5[c] for c in cons])
+      atom_con_dict6[atom] = ''.join(sorted(newstr))
+  
   for atom in atoms:
     fprints.append(atom_ele_dict[atom] + '-' + str(''.join(sorted(atom_con_dict[atom] + \
-    atom_con_dict2[atom] + atom_con_dict3[atom] + atom_con_dict4[atom] + atom_con_dict5[atom]))))
+    atom_con_dict2[atom] + atom_con_dict3[atom] + atom_con_dict4[atom] + atom_con_dict5[atom] + atom_con_dict6[atom]))))
   
   return fprints
 
@@ -154,7 +166,7 @@ def comparefingerprints(fp1, fp2):
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('-t', dest = 'template', nargs='+', help = "Template txyz file(s)", required=True)  
-  parser.add_argument('-d', dest = 'dealwith', help = "File to deal-with, can be .xyz/.txyz/.pdb", required=True)  
+  parser.add_argument('-d', dest = 'dealwith', help = "File to deal-with, can be .xyz/.txyz/.pdb/.sdf", required=True)  
   parser.add_argument('-s', dest = 'sortatom', help = "sort atoms according to template file", default=False, type=bool)  
   args = vars(parser.parse_args())
   templates = args["template"]
@@ -173,6 +185,11 @@ if __name__ == "__main__":
     xyz = dealwith
     dealwith = dealwith.replace("pdb", "txyz")
     obstr = "obabel -ipdb  %s -otxyz -O %s"%(xyz, dealwith)
+    os.system(obstr)
+  if os.path.splitext(dealwith)[1] == ".sdf":
+    xyz = dealwith
+    dealwith = dealwith.replace("sdf", "txyz")
+    obstr = "obabel -isdf  %s -otxyz -O %s"%(xyz, dealwith)
     os.system(obstr)
   
   match = False
