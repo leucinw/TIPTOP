@@ -40,6 +40,8 @@ import os
 import sys
 import argparse
 import numpy as np
+import networkx as nx
+import networkx.algorithms.isomorphism as iso
 
 def readTXYZ(TXYZ):
   atoms=[]
@@ -56,112 +58,31 @@ def readTXYZ(TXYZ):
     connections.append(data[6:])
   return atoms,coord,order,types,connections
 
-def fingerprint(TXYZ):
-  fprints = []
-  atoms, elements = np.loadtxt(TXYZ, usecols=(0,1), dtype='str', skiprows=1, unpack=True)
-  connections = []
-  for line in open(TXYZ).readlines()[1:]:
-    d = line.split()
-    connections.append(d[6:])
-  
-  atom_ele_dict = dict(zip(atoms, elements))
-  atom_con_dict = {}
-  for atom, con in zip(atoms,connections):
-    con_ele = [atom_ele_dict[c] for c in con] 
-    constr = ''.join(sorted(con_ele)) 
-    atom_con_dict[atom] = constr
+def txyz2graph(txyz):
+  G = nx.Graph()
+  nodes = []
+  edges = []
+  lines = open(txyz).readlines()
+  natom = int(lines[0].split()[0])
+  for line in lines[-natom:]:
+    ss = line.split()
+    if ss[0] not in nodes:
+      nodes.append(ss[0])
+    for s in ss[6:]:
+      ds = [ss[0], s]
+      if ds not in edges:
+        edges.append(ds)
 
-  level = 6 
-  if level > 1:
-    atom_con_dict2 = {}
-    for atom, con in zip(atoms,connections):
-      eles = []
-      cons = []
-      for c in con:
-        eles.append(atom_ele_dict[c])
-        cons.append(c)
-      cons = [x for _,x in sorted(zip(eles,cons))]
-      newstr = ''.join([atom_con_dict[c] for c in cons])
-      atom_con_dict2[atom] = ''.join(sorted(newstr))
+  G.add_nodes_from(nodes)
+  G.add_edges_from(edges)
+  return G
 
-  # level 3 is good for chain molecules 
-  if level > 2:
-    atom_con_dict3 = {}
-    for atom, con in zip(atoms,connections):
-      eles = []
-      cons = []
-      for c in con:
-        eles.append(atom_ele_dict[c])
-        cons.append(c)
-      cons = [x for _,x in sorted(zip(eles,cons))]
-      newstr = ''.join([atom_con_dict2[c] for c in cons])
-      atom_con_dict3[atom] = ''.join(sorted(newstr))
-
-  # level 4 is needed for ring molecules 
-  if level > 3:
-    atom_con_dict4 = {}
-    for atom, con in zip(atoms,connections):
-      eles = []
-      cons = []
-      for c in con:
-        eles.append(atom_ele_dict[c])
-        cons.append(c)
-      cons = [x for _,x in sorted(zip(eles,cons))]
-      newstr = ''.join([atom_con_dict3[c] for c in cons])
-      atom_con_dict4[atom] = ''.join(sorted(newstr))
-  
-  if level > 4:
-    atom_con_dict5 = {}
-    for atom, con in zip(atoms,connections):
-      eles = []
-      cons = []
-      for c in con:
-        eles.append(atom_ele_dict[c])
-        cons.append(c)
-      cons = [x for _,x in sorted(zip(eles,cons))]
-      newstr = ''.join([atom_con_dict4[c] for c in cons])
-      atom_con_dict5[atom] = ''.join(sorted(newstr))
-  
-  if level > 5:
-    atom_con_dict6 = {}
-    for atom, con in zip(atoms,connections):
-      eles = []
-      cons = []
-      for c in con:
-        eles.append(atom_ele_dict[c])
-        cons.append(c)
-      cons = [x for _,x in sorted(zip(eles,cons))]
-      newstr = ''.join([atom_con_dict5[c] for c in cons])
-      atom_con_dict6[atom] = ''.join(sorted(newstr))
-  
-  for atom in atoms:
-    fprints.append(atom_ele_dict[atom] + '-' + str(''.join(sorted(atom_con_dict[atom] + \
-    atom_con_dict2[atom] + atom_con_dict3[atom] + atom_con_dict4[atom] + atom_con_dict5[atom] + atom_con_dict6[atom]))))
-  
-  return fprints
-
-def comparefingerprints(fp1, fp2):
-  match = True
-  newidx = []
-  if sortatom:
-    for i in fp1:
-      if i in fp2:
-        idx = fp2.index(i)
-        newidx.append(idx)
-        fp2[idx] = ' '
-      else:
-        match = False
-        break
+def matchgraphs(G1, G2):
+  GM = iso.GraphMatcher(G1, G2)
+  if not GM.is_isomorphic():
+    return [False, {}]
   else:
-    for i in fp2:
-      if i in fp1:
-        idx = fp1.index(i)
-        newidx.append(idx)
-        fp1[idx] = ' '
-      else:
-        match = False
-        break
-  return match, newidx
+    return [True, GM.mapping]
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
@@ -191,30 +112,19 @@ if __name__ == "__main__":
     dealwith = dealwith.replace("sdf", "txyz")
     obstr = "obabel -isdf  %s -otxyz -O %s"%(xyz, dealwith)
     os.system(obstr)
-  
-  match = False
-  newidx = []
+ 
   fname = dealwith + "_2"
   for template in templates:
     atoms1, coord1, _, types1, connections1 =  readTXYZ(dealwith)
     atoms2, coord2, _, types2, connections2 =  readTXYZ(template)
     if len(atoms1) == len(atoms2):
-      fp1 = fingerprint(template)
-      fp2 = fingerprint(dealwith)
-      match, newidx = comparefingerprints(fp1, fp2)
-    if not match: 
-      print(f"Could not match {template} and {dealwith}")
-    else:
-      print(f"Matched {template}. New file generated {dealwith}_2")
-      with open(fname, 'w') as f:
-        f.write("%3s\n"%len(atoms1))
-        for i in range(len(newidx)):
-          idx = int(newidx[i])
-          if sortatom:
-            f.write("%3s%3s%12.6f%12.6f%12.6f  %s   %s\n"%(i+1,atoms1[idx], coord1[idx][0], coord1[idx][1], coord1[idx][2], types2[i], '  '.join(connections2[i])))
-          else:
+      g1 = txyz2graph(template)
+      g2 = txyz2graph(dealwith)
+      match, newidx = matchgraphs(g2, g1) 
+      
+      if match: 
+        with open(fname, 'w') as f:
+          f.write("%3s\n"%len(atoms1))
+          for i in range(len(newidx)):
+            idx = int(newidx[str(i+1)]) - 1
             f.write("%3s%3s%12.6f%12.6f%12.6f  %s   %s\n"%(i+1,atoms1[i], coord1[i][0], coord1[i][1], coord1[i][2], types2[idx], '  '.join(connections1[i])))
-      with open("mapping.lst", 'w') as f:
-        for i in range(len(newidx)):
-          f.write("%6d%6d\n"%(i, newidx[i]))
-      print("The atom order mapping has been saved in mapping.lst")

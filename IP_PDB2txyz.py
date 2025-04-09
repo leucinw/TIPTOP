@@ -28,7 +28,8 @@ SOFTWARE.
 #   University of Texas at Austin  #
 #===================================
 
-''' convert PDB structure to TINKER xyz 
+
+info = ''' convert PDB structure to TINKER xyz 
     1. Amino acids and nucleotides are from amoebabio18.prm
     2. Glycans are generated using Poltype
     3. Lipids are taken from literature and generated using Poltype
@@ -48,13 +49,17 @@ import concurrent.futures
 
 ''' write a pdb for obabel '''
 def prepare(pdb):
-  lines = open(pdb).readlines()
-  if lines[1][77] == ' ':
-    with open(pdb, "w") as f:
-      for line in lines:
-        line = line[:76] + ' '+ line[12:16].split()[0][0] + "\n"
-        f.write(line)
-    os.system(f"babel {pdb} {pdb.replace('pdb', 'txyz')}")
+  os.system(f"grep '^ATOM\|^HETATM' {pdb} > {pdb}_1")
+  lines = open(pdb + "_1").readlines()
+  with open(pdb + "_2", "w") as f:
+    for line in lines:
+      atomline = line[12:16]
+      if not (('MG' in atomline)):
+        line = line[:76] + ' ' + atomline.split()[0][0] + "\n"
+      else:
+        line = line[:76] + ' ' + atomline.strip() + "\n"
+      f.write(line)
+  os.system(f"obabel -ipdb {pdb} -otxyz -O {pdb.replace('pdb', 'txyz')}")
   return
 
 ''' split input pdb file into fragment pdbs ''' 
@@ -73,10 +78,10 @@ def splitpdb(pdb):
     if ("TER" not in line) and ("END" not in line) and ("REMARK" not in line) and ("CRYST" not in line) and ("MODEL" not in line) and ('WAT' not in line) and ('NA ' not in line):
       pdbstrs.append(line)
       curresid = line[22:26].strip()
-      
-      if curresnm + '_' + curresid not in tmp:
+      name_id = line[17:26]  
+      if name_id not in tmp:
         number_res += 1
-        tmp.append(curresnm + '_' + curresid)
+        tmp.append(name_id)
         pdbname = "%04d"%number_res + f"_{curresnm.split()[0]}.pdb"
         pdbs.append(pdbname)
       
@@ -109,6 +114,9 @@ def splitpdb(pdb):
       elif atom in ['CLA', 'Cl', 'Cl-']: 
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 361\n"
         txyzstr.append(line_s)
+      elif atom in ['MG', 'MG2']: 
+        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 357\n"
+        txyzstr.append(line_s)
       else:
         sys.exit(f'Could not recognize {atom}')
   
@@ -122,17 +130,12 @@ def splitpdb(pdb):
     for s in pdbs:
       f.write(s + '\n')
 
-  
   txyzname = "solvent.txyz"
   natom = len(txyzstr)
   if natom > 0: 
     with open(txyzname, 'w') as f:
       for s in txyzstr:
         f.write(s)
-
-  with open('bio.pdb', 'w') as f:
-    for s in pdbstrs:
-      f.write(s)
   return 
 
 ''' read the template database '''
@@ -165,14 +168,30 @@ def pdbtxyz(pdb):
   for key, value in database.items():
     template = os.path.join(rootdir, 'database.PDB2txyz', key, resname + "*.txyz")
     if (resname in value) or (resname + "_1" in value):
-      t = pdb.replace("pdb", "txyz_2")
+      t = pdb.replace('pdb', 'txyz')
+      # 
       if not os.path.isfile(t):
-        if isGlycan:
-          os.system(f"python {rootdir}/IP_MatchTXYZ_Glycan.py {template} {pdb.split('.')[0]}")
-        if (not isGlycan):
-          cmdstr = f"python {rootdir}/IP_MatchTXYZ.py -t {template} -d {pdb}"
-          os.system(cmdstr)
-            
+        print(resname)
+        if len(open(pdb).readlines()) > 1:
+          if isGlycan:
+            print(f"python {rootdir}/IP_MatchTXYZ_Glycan.py {template} {pdb.split('.')[0]}")
+            os.system(f"python {rootdir}/IP_MatchTXYZ_Glycan.py {template} {pdb.split('.')[0]}")
+          else:
+            cmdstr = f"python {rootdir}/IP_MatchTXYZ.py -t {template} -d {pdb} "
+            os.system(cmdstr)
+        else:
+          # ion
+          if resname not in ['HOH']:
+            line = open(pdb).readlines()[0]
+            x = float(line[30:38])
+            y = float(line[38:46])
+            z = float(line[46:54])
+            with open(pdb.replace('pdb', 'txyz'), 'w') as f:
+              f.write(f"1 {pdb}\n")
+              f.write(f"1 {line[12:16]}{x:10.3f}{y:10.3f}{z:10.3f} 0\n")
+          # water
+      else:
+        pass 
   return 
 
 ''' check the correctness of pdb and txyz mapping'''
@@ -219,8 +238,12 @@ def connect(txyz, txyzs):
 if __name__ == "__main__":
   global database
   global rootdir
-  pdb = sys.argv[1]
   
+  if len(sys.argv) != 3:
+    sys.exit(info)
+
+  pdb = sys.argv[1]
+   
   # special names in CHARMM-GUI file
   ress_in_pdbs = {"CYT":"DC ", "GUA":"DG ", "ADE":"DA ", "THY":"DT "} 
   for res, res_ in ress_in_pdbs.items():
@@ -234,7 +257,7 @@ if __name__ == "__main__":
   
   if 'A' in mode: 
     prepare(pdb)
-    splitpdb(pdb)
+    splitpdb(pdb + '_2')
   if 'B' in mode:
     pdbs = np.loadtxt("pdblist", dtype='str')
     jobs = []
@@ -252,7 +275,7 @@ if __name__ == "__main__":
     else:
       txyz = 'bio.txyz'
       pdb = 'bio.pdb'
-    os.system(f"babel {pdb} {txyz}")
+    os.system(f"obabel -ipdb {pdb} -otxyz -O {txyz}")
     txyzs = np.loadtxt("txyzlist",dtype='str')
     connect(txyz,txyzs)
     if os.path.isfile('solvent.txyz'):
