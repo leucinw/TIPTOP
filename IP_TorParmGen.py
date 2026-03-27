@@ -35,7 +35,7 @@ import argparse
 import numpy as np
 from pybel import *
 
-def main():
+if __name__ == "__main__":
   parser = argparse.ArgumentParser()
   parser.add_argument('-i', dest = 'txyz') 
   parser.add_argument('-k', dest = 'key')
@@ -122,7 +122,3 @@ def main():
            
           else:
             sys.exit(f"Error: mode {mode} is not supported")
-  return
-
-if __name__ == "__main__":
-  main()

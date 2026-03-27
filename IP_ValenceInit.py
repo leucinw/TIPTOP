@@ -88,7 +88,7 @@ def print_initial_parameters(txyz):
         edges.append(s)
   g.add_nodes_from(nodes)
   g.add_edges_from(edges)
- 
+
   # find bonds and angles
   bonds = {} 
   angles = {} 

@@ -37,7 +37,7 @@ from pybel import *
 import concurrent.futures 
 from utilities.extrabasis import *
 from utilities.polarize import *
-
+  
 # color
 RED = '\033[91m'
 ENDC = '\033[0m'
@@ -136,12 +136,17 @@ def f_TINKER():
   subprocess.run(gdmacmd,shell=True)
 
   polars = getpolar(optxyzfile, os.path.join(rootdir, "database.ParmGen"), polarset)
-  with open(poleditin, "w") as f:
-    f.write("\nA\n")
-    #f.write("\nP\n")
-    for p in polars:
-      f.write(f"{p} {polars[p]}\n")
-    f.write("\n2\nY\n\nY\n")
+  if not os.path.isfile(poleditin):
+    with open(poleditin, "w") as f:
+      if ff == 'AMOEBA':
+        f.write("\nA\n")
+      if ff == 'AMOEBA+':
+        f.write("\nP\n")
+      for p in polars:
+        f.write(f"{p} {polars[p]}\n")
+      f.write("\n2\nY\n\nY\n")
+  else:
+    print(YELLOW + f"Using the existing {poleditin} file" + ENDC)
   if os.path.isfile(prefix + ".key"):
     subprocess.run("rm -f %s.key"%prefix, shell=True)
   poledit1 = "poledit.x 1 %s %s < %s" %(gdmaout, prmheader, poleditin)
@@ -207,6 +212,7 @@ def main():
   parser.add_argument('-optonly', dest = 'optonly', default = 0, help='do QM opt only; 0 or 1', type=int)
   parser.add_argument('-disk',  dest = 'disk', default = "200", help='QM disk [unit GB]')
   parser.add_argument('-memory', dest = 'memory', default = "100", help='QM memory [unit GB]')
+  parser.add_argument('-ff', dest = 'forcefield', required=True, help='Force field', type=str.upper)  
   args = vars(parser.parse_args())
   
   infile = args["molecule"]
@@ -224,7 +230,9 @@ def main():
   global memory, disk
   memory = args["memory"]
   disk = args["disk"]
-
+  global ff
+  ff = args["forcefield"]
+  
   global chgspin, atmidx, comment, nproc 
   xyz = ".xyz"
   charge = args["charge"]
@@ -271,13 +279,17 @@ def main():
 
   global rootdir, prmheader
   rootdir = os.path.join(os.path.split(__file__)[0])
-  prmheader  = os.path.join(rootdir, "database.ParmGen", "amoeba_header.prm")
-  #prmheader  = os.path.join(rootdir, "database.ParmGen", "amoebaplus21_header.prm")
+  if ff == 'AMOEBA':
+    prmheader  = os.path.join(rootdir, "database.ParmGen", "amoeba_header.prm")
+  if ff == 'AMOEBA+':
+    prmheader  = os.path.join(rootdir, "database.ParmGen", "amoebaplus_header.prm")
 
   if (not os.path.isfile(optlogfile)):
     f_GAUSSIAN("OPT")
   
-  modes = [] 
+  modes = []
+  if len(open(optlogfile).readlines()) == 0:
+    sys.exit(f"It seems {optlogfile} is broken")
   opt_finished = "Normal termination" in open(optlogfile).readlines()[-1]
   if (optonly == 0):
     if (opt_finished) and not os.path.isfile(optxyzfile): 

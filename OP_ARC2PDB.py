@@ -57,7 +57,7 @@ def readarc(inp):
     if not line:break
     if iline == 0:
       natom = int(line.split()[0])
-    if pbc:
+    if pbc == 1:
       if iline%(natom+2) == 1:
         boxlines.append(line)
         print(GREEN + f"Reading {arc} frame: {int(iline/(natom+2)) + 1}" + ENDC)
@@ -82,8 +82,6 @@ def txyzpdb(pdblines, arclines):
       d = line.split()
       index_list[int(d[0])] = int(d[1])
   
-  print("arclines", len(arclines))
-  #print(k+index_list[j])
   # write a new pdb
   with open(out, 'w') as f:
     nframe = 1
@@ -109,7 +107,7 @@ if __name__ == "__main__":
   parser.add_argument('-pdb', dest = 'pdb', help = "Template pdb file", required=True)  
   parser.add_argument('-out', dest = 'out', help = "Output pdb file", required=True)  
   parser.add_argument('-arc', dest = 'arc', help = "Tinker trajectory file", required=True)  
-  parser.add_argument('-pbc', dest = 'pbc', help = "PBC in arc. True/False", default=False, type=bool)  
+  parser.add_argument('-pbc', dest = 'pbc', help = "PBC in arc. True/False", choices = [0, 1], default=0, type=int)  
   args = vars(parser.parse_args())
   pdb = args["pdb"]
   out = args["out"]

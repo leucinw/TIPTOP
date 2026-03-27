@@ -1,0 +1,220 @@
+
+     ######################################################################
+   ##########################################################################
+  ###                                                                      ###
+ ###            Tinker  ---  Software Tools for Molecular Design            ###
+ ##                                                                          ##
+ ##                       Version 8.10.1  October 2021                       ##
+ ##                                                                          ##
+ ##               Copyright (c)  Jay William Ponder  1990-2021               ##
+ ###                           All Rights Reserved                          ###
+  ###                                                                      ###
+   ##########################################################################
+     ######################################################################
+
+
+ Additional Atom Definition Parameters :
+
+     Type  Class  Symbol  Description               Atomic    Mass   Valence
+
+        1     1     O     MeOH                         8     15.999     2
+        2     2     C     MeOH                         6     12.011     4
+        3     3     H     MeOH                         1      1.008     1
+        4     4     H     MeOH                         1      1.008     1
+
+ Electrostatic Potential Grid Points :                  5781
+
+ Electrostatic Parameter Restraint Value :            1.0000
+
+ Additional Atom Definition Parameters :
+
+     Type  Class  Symbol  Description               Atomic    Mass   Valence
+
+        1     1     O     MeOH                         8     15.999     2
+        2     2     C     MeOH                         6     12.011     4
+        3     3     H     MeOH                         1      1.008     1
+        4     4     H     MeOH                         1      1.008     1
+
+ Additional Atomic Multipole Parameters :
+
+     Atom Type     Coordinate Frame Definition         Multipole Moments
+
+           1        2      4      0   Z-then-X    -0.43259
+                                                   0.23194  0.00000  0.19952
+                                                   0.21663
+                                                   0.00000 -0.61299
+                                                  -0.22978  0.00000  0.39636
+
+           2        1      4      0   Z-then-X     0.14950
+                                                   0.02732  0.00000  0.45746
+                                                  -0.48240
+                                                   0.00000 -0.37368
+                                                   0.04324  0.00000  0.85608
+
+           3        2      1      0   Z-then-X     0.02375
+                                                  -0.01341  0.00000 -0.13092
+                                                   0.00220
+                                                   0.00000 -0.00064
+                                                  -0.01538  0.00000 -0.00156
+
+           4        1      2      0   Z-then-X     0.21184
+                                                  -0.03313  0.00000 -0.05346
+                                                  -0.06013
+                                                   0.00000 -0.09304
+                                                  -0.03566  0.00000  0.15317
+
+ Additional Atomic Dipole Polarizability Parameters :
+
+     Atom Type           Alpha       Thole     Group Atom Types
+
+           1             0.812       0.390           2    4
+           2             1.620       0.390           1    3
+           3             0.480       0.390           2
+           4             0.457       0.390           1
+
+ Average Electrostatic Potential over Atoms :
+      (Kcal/mole per unit charge)
+
+   Structure   Atom      Points      Potential        Target        RMS Diff
+
+        1        1        1238        -9.2421        -9.0138         0.8805
+        1        2         688         0.3718         0.9430         1.1333
+        1        3         940         3.6840         3.1063         0.7774
+        1        4         943         3.6867         3.1110         0.7744
+        1        5         929        -1.9996        -0.5166         1.5943
+        1        6        1043         5.4447         4.7555         0.7267
+
+ Electrostatic Potential over all Grid Points :
+
+ Average Potential Value for Model :                 -0.0735
+ Average Potential Magnitude for Model :              5.2606
+ Average Potential Value for Target :                -0.0306
+ Average Potential Magnitude for Target :             4.7599
+
+ Average Signed Potential Difference :               -0.0430
+ Average Unsigned Potential Difference :              0.8372
+ Root Mean Square Potential Difference :              1.0093
+
+ Potential Fitting of Electrostatic Parameters :
+
+ Parameter      Atom Type         Category            Value         Fixed
+
+    --              1             Monopole          -0.43259          X
+     1              1             X-Dipole           0.23194
+    --              1             Y-Dipole           0.00000          X
+     2              1             Z-Dipole           0.19952
+     3              1             XX-Quad            0.21663
+    --              1             XY-Quad            0.00000          X
+     4              1             XZ-Quad           -0.22978
+     5              1             YY-Quad           -0.61299
+    --              1             YZ-Quad            0.00000          X
+    --              1             ZZ-Quad            0.39636
+    --              2             Monopole           0.14950          X
+     6              2             X-Dipole           0.02732
+    --              2             Y-Dipole           0.00000          X
+     7              2             Z-Dipole           0.45746
+     8              2             XX-Quad           -0.48240
+    --              2             XY-Quad            0.00000          X
+     9              2             XZ-Quad            0.04324
+    10              2             YY-Quad           -0.37368
+    --              2             YZ-Quad            0.00000          X
+    --              2             ZZ-Quad            0.85608
+    --              3             Monopole           0.02375          X
+    11              3             X-Dipole          -0.01341
+    --              3             Y-Dipole           0.00000          X
+    12              3             Z-Dipole          -0.13092
+    13              3             XX-Quad            0.00220
+    --              3             XY-Quad            0.00000          X
+    14              3             XZ-Quad           -0.01538
+    15              3             YY-Quad           -0.00064
+    --              3             YZ-Quad            0.00000          X
+    --              3             ZZ-Quad           -0.00156
+    --              4             Monopole           0.21184          X
+    16              4             X-Dipole          -0.03313
+    --              4             Y-Dipole           0.00000          X
+    17              4             Z-Dipole          -0.05346
+    18              4             XX-Quad           -0.06013
+    --              4             XY-Quad            0.00000          X
+    19              4             XZ-Quad           -0.03566
+    20              4             YY-Quad           -0.09304
+    --              4             YZ-Quad            0.00000          X
+    --              4             ZZ-Quad            0.15317
+
+ Levenberg-Marquardt Nonlinear Least Squares :
+
+ LS Iter     F Value      Total G     Active G    N Active   F Calls
+
+     0     2944.4774    2196.1604    2196.1604        20        21
+     1      114.8523     166.1367     166.1367        20        42
+     2       48.1571       9.1151       9.1151        20        63
+     3       38.6958       0.0000       0.0000        20        84
+
+ SQUARE  --  Normal Termination of Least Squares
+
+ Potential Fitting of Electrostatic Parameters :
+
+ Parameter      Atom Type         Category            Value         Fixed
+
+    --              1             Monopole          -0.43259          X
+     1              1             X-Dipole           0.18007
+    --              1             Y-Dipole           0.00000          X
+     2              1             Z-Dipole           0.26869
+     3              1             XX-Quad            0.21459
+    --              1             XY-Quad            0.00000          X
+     4              1             XZ-Quad           -0.25277
+     5              1             YY-Quad           -0.71579
+    --              1             YZ-Quad            0.00000          X
+    --              1             ZZ-Quad            0.50120
+    --              2             Monopole           0.14950          X
+     6              2             X-Dipole          -0.07684
+    --              2             Y-Dipole           0.00000          X
+     7              2             Z-Dipole           0.43148
+     8              2             XX-Quad           -0.40683
+    --              2             XY-Quad            0.00000          X
+     9              2             XZ-Quad            0.03664
+    10              2             YY-Quad           -0.41112
+    --              2             YZ-Quad            0.00000          X
+    --              2             ZZ-Quad            0.81795
+    --              3             Monopole           0.02375          X
+    11              3             X-Dipole           0.00206
+    --              3             Y-Dipole           0.00000          X
+    12              3             Z-Dipole          -0.09462
+    13              3             XX-Quad            0.01279
+    --              3             XY-Quad            0.00000          X
+    14              3             XZ-Quad           -0.03036
+    15              3             YY-Quad            0.01018
+    --              3             YZ-Quad            0.00000          X
+    --              3             ZZ-Quad           -0.02297
+    --              4             Monopole           0.21184          X
+    16              4             X-Dipole          -0.02991
+    --              4             Y-Dipole           0.00000          X
+    17              4             Z-Dipole          -0.08720
+    18              4             XX-Quad            0.02827
+    --              4             XY-Quad            0.00000          X
+    19              4             XZ-Quad           -0.01820
+    20              4             YY-Quad           -0.11623
+    --              4             YZ-Quad            0.00000          X
+    --              4             ZZ-Quad            0.08796
+
+ Average Electrostatic Potential over Atoms :
+      (Kcal/mole per unit charge)
+
+   Structure   Atom      Points      Potential        Target        RMS Diff
+
+        1        1        1238        -9.0142        -9.0138         0.0733
+        1        2         688         0.8802         0.9430         0.1224
+        1        3         940         3.0949         3.1063         0.0513
+        1        4         943         3.0999         3.1110         0.0505
+        1        5         929        -0.5692        -0.5166         0.0898
+        1        6        1043         4.7179         4.7555         0.0719
+
+ Electrostatic Potential over all Grid Points :
+
+ Average Potential Value for Model :                 -0.0570
+ Average Potential Magnitude for Model :              4.7527
+ Average Potential Value for Target :                -0.0306
+ Average Potential Magnitude for Target :             4.7599
+
+ Average Signed Potential Difference :               -0.0264
+ Average Unsigned Potential Difference :              0.0521
+ Root Mean Square Potential Difference :              0.0775

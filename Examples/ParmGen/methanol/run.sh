@@ -1,0 +1,1 @@
+python $TIPTOP/IP_ParmGen.py -molecule MeOH.mol2 -charge 0 -spin 1 -index 501 -polarset amoeba+ -memory 200 -disk 500

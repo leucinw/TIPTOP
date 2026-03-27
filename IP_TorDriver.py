@@ -118,8 +118,10 @@ class Torsion():
     for atmno, atmtyp in zip(atmnos, atmtyps):
       if atmno not in AtomTypeDict:
         AtomTypeDict[atmno] = atmtyp
-    subprocess.run("python /home/liuchw/bin/lconvert.py -it g09 -ot txyz -i %s -o %s -tp %s 2>err"%(self.log, self.xyz, inputxyz), shell=True)
-    print(GREEN + f"converted {self.xyz}" + ENDC)
+    #subprocess.run("python /home/liuchw/bin/lconvert.py -it g09 -ot txyz -i %s -o %s -at %s 2>err"%(self.log, self.xyz, inputxyz), shell=True)
+    #if not os.path.isfile(self.xyz):
+    #  print(f"{self.xyz} not found")
+    #print(GREEN + f"converted {self.xyz}" + ENDC)
     lines = open(inputkey).readlines()
     with open(self.key, "w") as f:
       for line in lines:
