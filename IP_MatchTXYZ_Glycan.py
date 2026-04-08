@@ -44,8 +44,8 @@ def _run(cmd, check=True):
 
 
 if __name__ == "__main__":
-  template = sys.argv[1]
-  fname = sys.argv[2]
+  templates = sys.argv[1:-1]
+  fname = sys.argv[-1]
   rootdir = os.path.join(os.path.split(__file__)[0])
 
   if shutil.which("obabel") is None:
@@ -56,7 +56,7 @@ if __name__ == "__main__":
 
   _run(["obabel", "-ipdb", f"{fname}.pdb", "-oxyz", "-O", f"{fname}_H.xyz", "-h"])
   _run(["obabel", "-ixyz", f"{fname}.xyz", "-otxyz", "-O", f"{fname}.txyz"])
-  _run([sys.executable, os.path.join(rootdir, "IP_MatchTXYZ.py"), "-t", template, "-d", f"{fname}_H.xyz"], check=False)
+  _run([sys.executable, os.path.join(rootdir, "IP_MatchTXYZ.py"), "-t"] + templates + ["-d", f"{fname}_H.xyz"], check=False)
 
   # here the idea is to add H back and run IP_MatchTXYZ
   # added Hs are always appended in the end
