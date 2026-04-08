@@ -131,8 +131,34 @@ def prepare(pdb):
   return
 
 
+def _load_ion_types(database, rootdir):
+  ''' Read atom types from single-atom templates in the database.
+
+  Returns a dict mapping residue name -> atom type string for all
+  single-atom (ion) templates in both solvent and ion categories.
+  '''
+  ion_types = {}
+  for category in ['ion', 'solvent']:
+    for resname in database.get(category, []):
+      tpath = os.path.join(rootdir, 'database.PDB2txyz', category, resname + '.txyz')
+      if os.path.isfile(tpath):
+        with open(tpath) as f:
+          tlines = f.readlines()
+        if len(tlines) >= 2:
+          try:
+            natom = int(tlines[0].split()[0])
+          except (ValueError, IndexError):
+            print(f"Warning: malformed template header in {tpath}, skipping")
+            continue
+          if natom == 1:
+            parts = tlines[1].split()
+            if len(parts) >= 6:
+              ion_types[resname] = parts[5]
+  return ion_types
+
+
 ''' split input pdb file into fragment pdbs '''
-def splitpdb(pdb, database):
+def splitpdb(pdb, database, rootdir):
   if not os.path.isfile(pdb):
     sys.exit(f"Error: PDB file not found: {pdb}")
 
@@ -144,11 +170,12 @@ def splitpdb(pdb, database):
   pdbs = []
   tmp = []
   txyzstr = []
-  solvent_residues = database.get('solvent', [])
+  solvent_ion_residues = set(database.get('solvent', []) + database.get('ion', []))
+  ion_types = _load_ion_types(database, rootdir)
   for line in lines:
     number_atm += 1
     curresnm = line[17:21].strip()
-    if ("TER" not in line) and ("END" not in line) and ("REMARK" not in line) and ("CRYST" not in line) and ("MODEL" not in line) and ('WAT' not in line) and ('NA ' not in line):
+    if ("TER" not in line) and ("END" not in line) and ("REMARK" not in line) and ("CRYST" not in line) and ("MODEL" not in line) and (curresnm not in solvent_ion_residues):
       pdbstrs.append(line)
       curresid = line[22:26].strip()
       name_id = line[17:26]
@@ -164,34 +191,26 @@ def splitpdb(pdb, database):
         pdb_lines[pdbname] = pdb_lines[pdbname] + [line]
 
     # write solvent and ions if there are
-    if curresnm in solvent_residues:
+    if curresnm in solvent_ion_residues:
       x = float(line[30:38])
       y = float(line[38:46])
       z = float(line[46:54])
       atom = line[13:17].strip()
-      if (atom == 'OH2') or (atom == 'OW'):
+      if curresnm in ion_types:
+        # Single-atom ion: look up type from template
+        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} {ion_types[curresnm]}\n"
+        txyzstr.append(line_s)
+      elif atom in ['OH2', 'OW', 'O']:
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 349 {number_atm+1} {number_atm+2}\n"
         txyzstr.append(line_s)
-      elif (atom == 'H1') or (atom == 'HW1'):
+      elif atom in ['H1', 'HW1']:
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 350 {number_atm-1} \n"
         txyzstr.append(line_s)
-      elif (atom == 'H2') or (atom == 'HW2'):
+      elif atom in ['H2', 'HW2']:
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 350 {number_atm-2} \n"
         txyzstr.append(line_s)
-      elif atom in ['POT', 'K', 'K+']:
-        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 353\n"
-        txyzstr.append(line_s)
-      elif atom in ['Na', 'NA', 'SOD']:
-        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 352\n"
-        txyzstr.append(line_s)
-      elif atom in ['CLA', 'Cl', 'Cl-']:
-        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 361\n"
-        txyzstr.append(line_s)
-      elif atom in ['MG', 'MG2']:
-        line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 357\n"
-        txyzstr.append(line_s)
       else:
-        sys.exit(f'Could not recognize {atom}')
+        sys.exit(f'Could not recognize atom {atom} in residue {curresnm} (line {number_atm})')
 
   for pdbname in pdb_lines:
     with open(pdbname, 'w') as f:
@@ -372,7 +391,7 @@ if __name__ == "__main__":
     print(f"  Input PDB: {pdb}")
     prepare(pdb)
     print(f"  Generated TXYZ: {_replace_ext(pdb, '.txyz')}")
-    splitpdb(pdb + '_2', database)
+    splitpdb(pdb + '_2', database, rootdir)
     residue_fragments = np.atleast_1d(np.loadtxt("pdblist", dtype='str'))
     print(f"  Split into {len(residue_fragments)} residue fragment(s)")
     print("Step A completed.\n")
