@@ -111,7 +111,8 @@ if __name__ == "__main__":
   args = vars(parser.parse_args())
   templates = args["template"]
   dealwith  = args["dealwith"]
-  sortatom  = args["sortatom"]
+  # sortatom is accepted but not yet implemented
+  _sortatom = args["sortatom"]
 
   if not os.path.isfile(dealwith):
     sys.exit(f"Error: input file not found: {dealwith}")
