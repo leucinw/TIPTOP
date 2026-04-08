@@ -145,7 +145,11 @@ def _load_ion_types(database, rootdir):
         with open(tpath) as f:
           tlines = f.readlines()
         if len(tlines) >= 2:
-          natom = int(tlines[0].split()[0])
+          try:
+            natom = int(tlines[0].split()[0])
+          except (ValueError, IndexError):
+            print(f"Warning: malformed template header in {tpath}, skipping")
+            continue
           if natom == 1:
             parts = tlines[1].split()
             if len(parts) >= 6:
@@ -206,7 +210,7 @@ def splitpdb(pdb, database, rootdir):
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 350 {number_atm-2} \n"
         txyzstr.append(line_s)
       else:
-        sys.exit(f'Could not recognize atom {atom} in residue {curresnm}')
+        sys.exit(f'Could not recognize atom {atom} in residue {curresnm} (line {number_atm})')
 
   for pdbname in pdb_lines:
     with open(pdbname, 'w') as f:
