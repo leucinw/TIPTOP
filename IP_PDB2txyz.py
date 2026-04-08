@@ -44,6 +44,7 @@ info = ''' convert PDB structure to TINKER xyz
 
 import os
 import sys
+import glob
 import shutil
 import subprocess
 import numpy as np
@@ -213,19 +214,23 @@ def pdbtxyz(pdb, database, rootdir):
   isGlycan = resname in glycan_residues
 
   for key, value in database.items():
-    template = os.path.join(rootdir, 'database.PDB2txyz', key, resname + "*.txyz")
+    template_pattern = os.path.join(rootdir, 'database.PDB2txyz', key, resname + "*.txyz")
     if (resname in value) or (resname + "_1" in value):
       t = _replace_ext(pdb, '.txyz')
       #
       if not os.path.isfile(t):
         print(resname)
+        templates = sorted(glob.glob(template_pattern))
+        if not templates:
+          print(f"Warning: no template files match pattern: {template_pattern}")
+          continue
         if len(open(pdb).readlines()) > 1:
           if isGlycan:
-            cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ_Glycan.py"), template, pdb.split('.')[0]]
+            cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ_Glycan.py")] + templates + [pdb.split('.')[0]]
             print(f"Running: {' '.join(cmd)}")
             _run(cmd, check=False)
           else:
-            cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ.py"), "-t", template, "-d", pdb]
+            cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ.py"), "-t"] + templates + ["-d", pdb]
             _run(cmd, check=False)
         else:
           # ion
