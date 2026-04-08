@@ -38,18 +38,37 @@ SOFTWARE.
 
 import os
 import sys
+import shutil
+import subprocess
 import argparse
 import numpy as np
 import networkx as nx
 import networkx.algorithms.isomorphism as iso
 
+
+def _run(cmd, check=True):
+  ''' Run a command using subprocess; cmd is a list of arguments. '''
+  result = subprocess.run(cmd, capture_output=True, text=True)
+  if check and result.returncode != 0:
+    sys.exit(f"Command failed: {' '.join(cmd)}\n{result.stderr}")
+  return result
+
+
+def _replace_ext(filepath, new_ext):
+  ''' Replace the file extension, e.g. .pdb -> .txyz '''
+  base, _ = os.path.splitext(filepath)
+  return base + new_ext
+
+
 def readTXYZ(TXYZ):
+  if not os.path.isfile(TXYZ):
+    sys.exit(f"Error: TXYZ file not found: {TXYZ}")
   atoms=[]
   coord=[]
   order=[]
   types=[]
   connections=[]
-  for line in open(TXYZ).readlines()[1:]: 
+  for line in open(TXYZ).readlines()[1:]:
     data=line.split()
     order.append(data[0])
     atoms.append(data[1])
@@ -86,33 +105,36 @@ def matchgraphs(G1, G2):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser()
-  parser.add_argument('-t', dest = 'template', nargs='+', help = "Template txyz file(s)", required=True)  
-  parser.add_argument('-d', dest = 'dealwith', help = "File to deal-with, can be .xyz/.txyz/.pdb/.sdf", required=True)  
-  parser.add_argument('-s', dest = 'sortatom', help = "sort atoms according to template file", default=False, type=bool)  
+  parser.add_argument('-t', dest = 'template', nargs='+', help = "Template txyz file(s)", required=True)
+  parser.add_argument('-d', dest = 'dealwith', help = "File to deal-with, can be .xyz/.txyz/.pdb/.sdf", required=True)
+  parser.add_argument('-s', dest = 'sortatom', help = "sort atoms according to template file", default=False, type=bool)
   args = vars(parser.parse_args())
   templates = args["template"]
   dealwith  = args["dealwith"]
-  global sortatom
   sortatom  = args["sortatom"]
-  
-  if os.path.splitext(dealwith)[1] == ".xyz":
+
+  if not os.path.isfile(dealwith):
+    sys.exit(f"Error: input file not found: {dealwith}")
+
+  if shutil.which("obabel") is None:
+    sys.exit("Error: 'obabel' not found on PATH. Please install Open Babel first.")
+
+  ext = os.path.splitext(dealwith)[1]
+  if ext == ".xyz":
     lines = open(dealwith).readlines()
     if not (int(lines[0].split()[0]) == len(lines)-1):
       xyz = dealwith
-      dealwith = dealwith.replace("xyz", "txyz")
-      obstr = "obabel -ixyz %s -otxyz -O %s"%(xyz, dealwith)
-      os.system(obstr)
-  if os.path.splitext(dealwith)[1] == ".pdb":
+      dealwith = _replace_ext(dealwith, ".txyz")
+      _run(["obabel", "-ixyz", xyz, "-otxyz", "-O", dealwith])
+  elif ext == ".pdb":
     xyz = dealwith
-    dealwith = dealwith.replace("pdb", "txyz")
-    obstr = "obabel -ipdb  %s -otxyz -O %s"%(xyz, dealwith)
-    os.system(obstr)
-  if os.path.splitext(dealwith)[1] == ".sdf":
+    dealwith = _replace_ext(dealwith, ".txyz")
+    _run(["obabel", "-ipdb", xyz, "-otxyz", "-O", dealwith])
+  elif ext == ".sdf":
     xyz = dealwith
-    dealwith = dealwith.replace("sdf", "txyz")
-    obstr = "obabel -isdf  %s -otxyz -O %s"%(xyz, dealwith)
-    os.system(obstr)
- 
+    dealwith = _replace_ext(dealwith, ".txyz")
+    _run(["obabel", "-isdf", xyz, "-otxyz", "-O", dealwith])
+
   fname = dealwith + "_2"
   for template in templates:
     atoms1, coord1, _, types1, connections1 =  readTXYZ(dealwith)
@@ -120,9 +142,9 @@ if __name__ == "__main__":
     if len(atoms1) == len(atoms2):
       g1 = txyz2graph(template)
       g2 = txyz2graph(dealwith)
-      match, newidx = matchgraphs(g2, g1) 
-      
-      if match: 
+      match, newidx = matchgraphs(g2, g1)
+
+      if match:
         with open(fname, 'w') as f:
           f.write("%3s\n"%len(atoms1))
           for i in range(len(newidx)):

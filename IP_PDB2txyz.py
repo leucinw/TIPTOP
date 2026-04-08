@@ -44,12 +44,41 @@ info = ''' convert PDB structure to TINKER xyz
 
 import os
 import sys
+import shutil
+import subprocess
 import numpy as np
-import concurrent.futures 
+import concurrent.futures
+
+
+def _run(cmd, check=True):
+  ''' Run a command using subprocess; cmd is a list of arguments. '''
+  result = subprocess.run(cmd, capture_output=True, text=True)
+  if check and result.returncode != 0:
+    sys.exit(f"Command failed: {' '.join(cmd)}\n{result.stderr}")
+  return result
+
+
+def _replace_ext(filepath, new_ext):
+  ''' Replace the file extension, e.g. .pdb -> .txyz '''
+  base, _ = os.path.splitext(filepath)
+  return base + new_ext
+
+
+def _check_tool(name):
+  ''' Check that an external tool is available on PATH. '''
+  if shutil.which(name) is None:
+    sys.exit(f"Error: '{name}' not found on PATH. Please install it first.")
+
 
 ''' write a pdb for obabel '''
 def prepare(pdb):
-  os.system(f"grep '^ATOM\|^HETATM' {pdb} > {pdb}_1")
+  _check_tool("obabel")
+  # Extract ATOM/HETATM lines
+  with open(pdb) as fin, open(pdb + "_1", "w") as fout:
+    for line in fin:
+      if line.startswith("ATOM") or line.startswith("HETATM"):
+        fout.write(line)
+
   lines = open(pdb + "_1").readlines()
   with open(pdb + "_2", "w") as f:
     for line in lines:
@@ -59,39 +88,45 @@ def prepare(pdb):
       else:
         line = line[:76] + ' ' + atomline.strip() + "\n"
       f.write(line)
-  os.system(f"obabel -ipdb {pdb} -otxyz -O {pdb.replace('pdb', 'txyz')}")
+  txyz_out = _replace_ext(pdb, '.txyz')
+  _run(["obabel", "-ipdb", pdb, "-otxyz", "-O", txyz_out])
   return
 
-''' split input pdb file into fragment pdbs ''' 
-def splitpdb(pdb):
+
+''' split input pdb file into fragment pdbs '''
+def splitpdb(pdb, database):
+  if not os.path.isfile(pdb):
+    sys.exit(f"Error: PDB file not found: {pdb}")
+
   lines = open(pdb).readlines()
   pdb_lines = {}
   number_res = 0
   number_atm = 0
   pdbstrs = []
   pdbs = []
-  tmp = [] 
+  tmp = []
   txyzstr = []
+  solvent_residues = database.get('solvent', [])
   for line in lines:
     number_atm += 1
     curresnm = line[17:21].strip()
     if ("TER" not in line) and ("END" not in line) and ("REMARK" not in line) and ("CRYST" not in line) and ("MODEL" not in line) and ('WAT' not in line) and ('NA ' not in line):
       pdbstrs.append(line)
       curresid = line[22:26].strip()
-      name_id = line[17:26]  
+      name_id = line[17:26]
       if name_id not in tmp:
         number_res += 1
         tmp.append(name_id)
         pdbname = "%04d"%number_res + f"_{curresnm.split()[0]}.pdb"
         pdbs.append(pdbname)
-      
-      if pdbname not in pdb_lines.keys(): 
+
+      if pdbname not in pdb_lines.keys():
         pdb_lines[pdbname] = [line]
       else:
         pdb_lines[pdbname] = pdb_lines[pdbname] + [line]
-    
+
     # write solvent and ions if there are
-    if curresnm in database['solvent']:
+    if curresnm in solvent_residues:
       x = float(line[30:38])
       y = float(line[38:46])
       z = float(line[46:54])
@@ -105,43 +140,46 @@ def splitpdb(pdb):
       elif (atom == 'H2') or (atom == 'HW2'):
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 350 {number_atm-2} \n"
         txyzstr.append(line_s)
-      elif atom in ['POT', 'K', 'K+']: 
+      elif atom in ['POT', 'K', 'K+']:
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 353\n"
         txyzstr.append(line_s)
-      elif atom in ['Na', 'NA', 'SOD']: 
+      elif atom in ['Na', 'NA', 'SOD']:
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 352\n"
         txyzstr.append(line_s)
-      elif atom in ['CLA', 'Cl', 'Cl-']: 
+      elif atom in ['CLA', 'Cl', 'Cl-']:
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 361\n"
         txyzstr.append(line_s)
-      elif atom in ['MG', 'MG2']: 
+      elif atom in ['MG', 'MG2']:
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} 357\n"
         txyzstr.append(line_s)
       else:
         sys.exit(f'Could not recognize {atom}')
-  
-  for pdbname in pdb_lines: 
+
+  for pdbname in pdb_lines:
     with open(pdbname, 'w') as f:
       pdbstr = pdb_lines[pdbname]
       for s in pdbstr:
         f.write(s)
-  
+
   with open('pdblist', 'w') as f:
     for s in pdbs:
       f.write(s + '\n')
 
   txyzname = "solvent.txyz"
   natom = len(txyzstr)
-  if natom > 0: 
+  if natom > 0:
     with open(txyzname, 'w') as f:
       for s in txyzstr:
         f.write(s)
-  return 
+  return
+
 
 ''' read the template database '''
-def readdatabase():
+def readdatabase(rootdir):
   database = {}
-  dbdir = os.path.join(rootdir, 'database.PDB2txyz') 
+  dbdir = os.path.join(rootdir, 'database.PDB2txyz')
+  if not os.path.isdir(dbdir):
+    sys.exit(f"Error: database directory not found: {dbdir}")
   ffs = os.listdir(dbdir)
   for ff in ffs:
     dirname = os.path.join(rootdir, 'database.PDB2txyz', ff)
@@ -156,29 +194,39 @@ def readdatabase():
             database[ff] += [resname]
   return database
 
+
+def _get_glycan_residues(database):
+  ''' Derive glycan residue names from the database instead of hardcoding. '''
+  return database.get('glycan', [])
+
+
 ''' convert xyz to tinker xyz '''
-def pdbtxyz(pdb):
+def pdbtxyz(pdb, database, rootdir):
   resname = pdb.split(".pdb")[0].split("_")[-1]
-  
-  # glycan is special
-  isGlycan = False
-  if resname in ['AMAN', 'BMAN', 'AFUC', 'ANE5', 'BGAL', 'BGLN', 'AGAN']:
-    isGlycan = True 
-  
+
+  if not os.path.isfile(pdb):
+    print(f"Warning: PDB file not found: {pdb}")
+    return
+
+  # glycan is special — derive from database
+  glycan_residues = _get_glycan_residues(database)
+  isGlycan = resname in glycan_residues
+
   for key, value in database.items():
     template = os.path.join(rootdir, 'database.PDB2txyz', key, resname + "*.txyz")
     if (resname in value) or (resname + "_1" in value):
-      t = pdb.replace('pdb', 'txyz')
-      # 
+      t = _replace_ext(pdb, '.txyz')
+      #
       if not os.path.isfile(t):
         print(resname)
         if len(open(pdb).readlines()) > 1:
           if isGlycan:
-            print(f"python {rootdir}/IP_MatchTXYZ_Glycan.py {template} {pdb.split('.')[0]}")
-            os.system(f"python {rootdir}/IP_MatchTXYZ_Glycan.py {template} {pdb.split('.')[0]}")
+            cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ_Glycan.py"), template, pdb.split('.')[0]]
+            print(f"Running: {' '.join(cmd)}")
+            _run(cmd, check=False)
           else:
-            cmdstr = f"python {rootdir}/IP_MatchTXYZ.py -t {template} -d {pdb} "
-            os.system(cmdstr)
+            cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ.py"), "-t", template, "-d", pdb]
+            _run(cmd, check=False)
         else:
           # ion
           if resname not in ['HOH']:
@@ -186,16 +234,21 @@ def pdbtxyz(pdb):
             x = float(line[30:38])
             y = float(line[38:46])
             z = float(line[46:54])
-            with open(pdb.replace('pdb', 'txyz'), 'w') as f:
+            with open(_replace_ext(pdb, '.txyz'), 'w') as f:
               f.write(f"1 {pdb}\n")
               f.write(f"1 {line[12:16]}{x:10.3f}{y:10.3f}{z:10.3f} 0\n")
           # water
       else:
-        pass 
-  return 
+        pass
+  return
+
 
 ''' check the correctness of pdb and txyz mapping'''
 def check_pdb_xyz(pdblist, xyzlist):
+  if not os.path.isfile(pdblist):
+    sys.exit(f"Error: file not found: {pdblist}")
+  if not os.path.isfile(xyzlist):
+    sys.exit(f"Error: file not found: {xyzlist}")
   pdbs = list(np.loadtxt(pdblist, usecols=(0), dtype='str', unpack=True))
   xyzs = list(np.loadtxt(xyzlist, usecols=(0), dtype='str', unpack=True))
   npdb = len(pdbs)
@@ -206,7 +259,8 @@ def check_pdb_xyz(pdblist, xyzlist):
       xlines = open(xyz).readlines()
       if len(plines) != len(xlines)-1:
         sys.exit(f"Error: {pdb} not the same as {xyz}")
-  return 
+  return
+
 
 ''' generate the final txyz '''
 def connect(txyz, txyzs):
@@ -215,12 +269,12 @@ def connect(txyz, txyzs):
   alltypes = []
   for t in txyzs:
     types = np.loadtxt(t, usecols=(5,), dtype="str", unpack=True, skiprows=1)
-    if types.ndim == 0: 
+    if types.ndim == 0:
       alltypes += [str(types), ]
     else:
       alltypes += list(types)
   lines = open(txyz).readlines()
-  
+
   if os.path.isfile('solvent.txyz'):
     nlines = len(open('solvent.txyz').readlines())
   else:
@@ -230,55 +284,74 @@ def connect(txyz, txyzs):
     for i in range(1,len(lines)):
       d = lines[i].split()
       d[5] = alltypes[i-1]
-      constr = ''.join(["%10s"%s for s in d[6:]]) 
+      constr = ''.join(["%10s"%s for s in d[6:]])
       line = f'{d[0]:>10s}{d[1]:>3s}{float(d[2]):12.4f}{float(d[3]):12.4f}{float(d[4]):12.4f}{d[5]:>5s}{constr}\n'
       f.write(line)
   return
 
+
+def _apply_charmm_fixups(pdb):
+  ''' Apply CHARMM-GUI residue name fixups using in-memory replacement. '''
+  ress_in_pdbs = {"CYT": "DC ", "GUA": "DG ", "ADE": "DA ", "THY": "DT "}
+  with open(pdb) as f:
+    content = f.read()
+  for res, res_ in ress_in_pdbs.items():
+    content = content.replace(res, res_)
+  with open(pdb, 'w') as f:
+    f.write(content)
+
+
+def _pdbtxyz_wrapper(args):
+  ''' Wrapper for pdbtxyz to unpack arguments for ProcessPoolExecutor. '''
+  pdb, database, rootdir = args
+  return pdbtxyz(pdb, database, rootdir)
+
+
 if __name__ == "__main__":
-  global database
-  global rootdir
-  
   if len(sys.argv) != 3:
     sys.exit(info)
 
   pdb = sys.argv[1]
-   
+
+  if not os.path.isfile(pdb):
+    sys.exit(f"Error: PDB file not found: {pdb}")
+
   # special names in CHARMM-GUI file
-  ress_in_pdbs = {"CYT":"DC ", "GUA":"DG ", "ADE":"DA ", "THY":"DT "} 
-  for res, res_ in ress_in_pdbs.items():
-    cmd = f"sed 's/{res}/{res_}/g' -i {pdb}"
-    os.system(cmd)
-  
+  _apply_charmm_fixups(pdb)
+
   mode = sys.argv[2].upper()
   rootdir = os.path.join(os.path.split(__file__)[0])
-  database = readdatabase()
+  database = readdatabase(rootdir)
 
-  
-  if 'A' in mode: 
+
+  if 'A' in mode:
     prepare(pdb)
-    splitpdb(pdb + '_2')
+    splitpdb(pdb + '_2', database)
   if 'B' in mode:
     pdbs = np.loadtxt("pdblist", dtype='str')
     jobs = []
     with concurrent.futures.ProcessPoolExecutor() as executor:
-      results = [executor.submit(pdbtxyz, pdb) for pdb in pdbs]
+      args_list = [(p, database, rootdir) for p in pdbs]
+      results = [executor.submit(_pdbtxyz_wrapper, args) for args in args_list]
       for f in concurrent.futures.as_completed(results):
         jobs.append(f.result())
-    txyzs = [pdb.replace('pdb', 'txyz_2') for pdb in pdbs]
+    txyzs = [_replace_ext(p, '.txyz_2') for p in pdbs]
     with open('txyzlist', 'w') as f:
       for s in txyzs:
         f.write(s + '\n')
   if 'C' in mode:
+    _check_tool("obabel")
     if not os.path.isfile('bio.pdb'):
-      txyz = pdb.replace("pdb", "txyz")
+      txyz = _replace_ext(pdb, '.txyz')
     else:
       txyz = 'bio.txyz'
       pdb = 'bio.pdb'
-    os.system(f"obabel -ipdb {pdb} -otxyz -O {txyz}")
+    _run(["obabel", "-ipdb", pdb, "-otxyz", "-O", txyz])
     txyzs = np.loadtxt("txyzlist",dtype='str')
     connect(txyz,txyzs)
     if os.path.isfile('solvent.txyz'):
-      os.system(f"cat {txyz}_2 solvent.txyz > final.txyz")
+      with open(txyz + "_2") as src, open("solvent.txyz") as sol, open("final.txyz", "w") as out:
+        out.write(src.read())
+        out.write(sol.read())
     else:
-      os.system(f"cp {txyz}_2 final.txyz")
+      shutil.copy(txyz + "_2", "final.txyz")

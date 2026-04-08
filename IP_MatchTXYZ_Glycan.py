@@ -30,25 +30,48 @@ SOFTWARE.
 
 import os
 import sys
+import shutil
+import subprocess
 import numpy as np
+
+
+def _run(cmd, check=True):
+  ''' Run a command using subprocess; cmd is a list of arguments. '''
+  result = subprocess.run(cmd, capture_output=True, text=True)
+  if check and result.returncode != 0:
+    sys.exit(f"Command failed: {' '.join(cmd)}\n{result.stderr}")
+  return result
+
 
 if __name__ == "__main__":
   template = sys.argv[1]
   fname = sys.argv[2]
   rootdir = os.path.join(os.path.split(__file__)[0])
-  cmd = f"babel -ipdb {fname}.pdb -oxyz  {fname}_H.xyz -h"
-  os.system(cmd)
-  cmd = f"babel -ixyz {fname}.xyz -otxyz {fname}.txyz"
-  os.system(cmd)
-  cmd = f"python {rootdir}/IP_MatchTXYZ.py {template} {fname}_H.xyz"
-  os.system(cmd)
 
-  # here the idea is to add H back and run IP_MatchTXYZ 
+  if shutil.which("obabel") is None:
+    sys.exit("Error: 'obabel' not found on PATH. Please install Open Babel first.")
+
+  if not os.path.isfile(f"{fname}.pdb"):
+    sys.exit(f"Error: PDB file not found: {fname}.pdb")
+
+  _run(["obabel", "-ipdb", f"{fname}.pdb", "-oxyz", "-O", f"{fname}_H.xyz", "-h"])
+  _run(["obabel", "-ixyz", f"{fname}.xyz", "-otxyz", "-O", f"{fname}.txyz"])
+  _run([sys.executable, os.path.join(rootdir, "IP_MatchTXYZ.py"), "-t", template, "-d", f"{fname}_H.xyz"], check=False)
+
+  # here the idea is to add H back and run IP_MatchTXYZ
   # added Hs are always appended in the end
   # assign types for the needed fragment
-  lines = open(f"{fname}.txyz").readlines()
-  types = np.loadtxt(f"{fname}_H.txyz_2", usecols=(5,), dtype='str', unpack=True, skiprows=1)[:len(lines)]
-  
+  txyz_file = f"{fname}.txyz"
+  matched_file = f"{fname}_H.txyz_2"
+
+  if not os.path.isfile(txyz_file):
+    sys.exit(f"Error: expected file not found: {txyz_file}")
+  if not os.path.isfile(matched_file):
+    sys.exit(f"Error: expected file not found: {matched_file}")
+
+  lines = open(txyz_file).readlines()
+  types = np.loadtxt(matched_file, usecols=(5,), dtype='str', unpack=True, skiprows=1)[:len(lines)]
+
   with open(fname + ".txyz_2", 'w') as f:
     f.write(lines[0])
     for i in range(1, len(lines)):
