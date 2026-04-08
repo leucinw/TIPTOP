@@ -373,8 +373,8 @@ if __name__ == "__main__":
     prepare(pdb)
     print(f"  Generated TXYZ: {_replace_ext(pdb, '.txyz')}")
     splitpdb(pdb + '_2', database)
-    pdbs_a = np.atleast_1d(np.loadtxt("pdblist", dtype='str'))
-    print(f"  Split into {len(pdbs_a)} residue fragment(s)")
+    residue_fragments = np.atleast_1d(np.loadtxt("pdblist", dtype='str'))
+    print(f"  Split into {len(residue_fragments)} residue fragment(s)")
     print("Step A completed.\n")
 
   if 'B' in mode:
@@ -411,7 +411,8 @@ if __name__ == "__main__":
       print(f"    1. Create a TXYZ template file named <RESNAME>.txyz")
       print(f"    2. Place it in the appropriate subdirectory under:")
       print(f"         {dbdir}")
-      print(f"       Available categories: {', '.join(sorted(os.listdir(dbdir)))}")
+      categories = sorted(os.listdir(dbdir)) if os.path.isdir(dbdir) else []
+      print(f"       Available categories: {', '.join(categories)}")
       print(f"    3. The template must follow TINKER XYZ format:")
       print(f"         Line 1: <natom> <title>")
       print(f"         Lines 2+: <index> <atom_name> <x> <y> <z> <type> <connected_indices...>")
