@@ -44,7 +44,6 @@ info = ''' convert PDB structure to TINKER xyz
 
 import os
 import sys
-import glob
 import shutil
 import subprocess
 import numpy as np
@@ -69,6 +68,44 @@ def _check_tool(name):
   ''' Check that an external tool is available on PATH. '''
   if shutil.which(name) is None:
     sys.exit(f"Error: '{name}' not found on PATH. Please install it first.")
+
+
+def _get_base_name(template_name):
+  ''' Strip trailing _N numeric suffix from a template name.
+
+  Examples: DA_1 -> DA, HIS_2 -> HIS, HISC_3 -> HISC, ALA -> ALA
+  '''
+  parts = template_name.rsplit('_', 1)
+  if len(parts) == 2 and parts[1].isdigit():
+    return parts[0]
+  return template_name
+
+
+def _matches_residue(template_name, resname):
+  ''' Check if a template name belongs to a given residue.
+
+  Handles both naming conventions:
+    - Amino acid terminal variants: ALA matches ALA, ALAC, ALAN
+      (single uppercase letter appended for C/N-terminal)
+    - Numbered parts: DA matches DA_1, DA_2, DA_3
+      (_N suffix for multi-part templates)
+    - Combined: HIS matches HIS, HISC, HISN, HIS_1, HISC_1, etc.
+  '''
+  if template_name == resname:
+    return True
+  base = _get_base_name(template_name)
+  if base == resname:
+    return True
+  # Amino acid terminal variants: base name has exactly one extra uppercase character
+  if base.startswith(resname) and len(base) == len(resname) + 1 and base[-1].isupper():
+    return True
+  return False
+
+
+def _find_templates(resname, template_names, template_dir):
+  ''' Find all template file paths for a residue from a list of template names. '''
+  matched = [name for name in template_names if _matches_residue(name, resname)]
+  return sorted(os.path.join(template_dir, m + ".txyz") for m in matched)
 
 
 ''' write a pdb for obabel '''
@@ -214,37 +251,36 @@ def pdbtxyz(pdb, database, rootdir):
   isGlycan = resname in glycan_residues
 
   for key, value in database.items():
-    template_pattern = os.path.join(rootdir, 'database.PDB2txyz', key, resname + "*.txyz")
-    if (resname in value) or (resname + "_1" in value):
-      t = _replace_ext(pdb, '.txyz')
-      #
-      if not os.path.isfile(t):
-        print(resname)
-        templates = sorted(glob.glob(template_pattern))
-        if not templates:
-          print(f"Warning: no template files match pattern: {template_pattern}")
-          continue
-        if len(open(pdb).readlines()) > 1:
-          if isGlycan:
-            cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ_Glycan.py")] + templates + [pdb.split('.')[0]]
-            print(f"Running: {' '.join(cmd)}")
-            _run(cmd, check=False)
-          else:
-            cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ.py"), "-t"] + templates + ["-d", pdb]
-            _run(cmd, check=False)
+    template_dir = os.path.join(rootdir, 'database.PDB2txyz', key)
+    templates = _find_templates(resname, value, template_dir)
+    if not templates:
+      continue
+
+    t = _replace_ext(pdb, '.txyz')
+    if not os.path.isfile(t):
+      print(resname)
+      pdb_lines = open(pdb).readlines()
+      if len(pdb_lines) > 1:
+        if isGlycan:
+          cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ_Glycan.py")] + templates + [pdb.split('.')[0]]
+          print(f"Running: {' '.join(cmd)}")
+          _run(cmd, check=False)
         else:
-          # ion
-          if resname not in ['HOH']:
-            line = open(pdb).readlines()[0]
-            x = float(line[30:38])
-            y = float(line[38:46])
-            z = float(line[46:54])
-            with open(_replace_ext(pdb, '.txyz'), 'w') as f:
-              f.write(f"1 {pdb}\n")
-              f.write(f"1 {line[12:16]}{x:10.3f}{y:10.3f}{z:10.3f} 0\n")
-          # water
+          cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ.py"), "-t"] + templates + ["-d", pdb]
+          _run(cmd, check=False)
       else:
-        pass
+        # ion
+        if resname not in ['HOH']:
+          line = pdb_lines[0]
+          x = float(line[30:38])
+          y = float(line[38:46])
+          z = float(line[46:54])
+          with open(_replace_ext(pdb, '.txyz'), 'w') as f:
+            f.write(f"1 {pdb}\n")
+            f.write(f"1 {line[12:16]}{x:10.3f}{y:10.3f}{z:10.3f} 0\n")
+        # water
+    else:
+      pass
   return
 
 
