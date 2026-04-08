@@ -54,7 +54,7 @@ def _run(cmd, check=True):
   ''' Run a command using subprocess; cmd is a list of arguments. '''
   result = subprocess.run(cmd, capture_output=True, text=True)
   if check and result.returncode != 0:
-    sys.exit(f"Command failed: {' '.join(cmd)}\n{result.stderr}")
+    sys.exit(f"Command failed: {' '.join(str(c) for c in cmd)}\n{result.stderr}")
   return result
 
 

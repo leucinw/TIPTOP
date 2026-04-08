@@ -61,7 +61,7 @@ def _run(cmd, check=True):
   ''' Run a command using subprocess; cmd is a list of arguments. '''
   result = subprocess.run(cmd, capture_output=True, text=True)
   if check and result.returncode != 0:
-    sys.exit(f"Command failed: {' '.join(cmd)}\n{result.stderr}")
+    sys.exit(f"Command failed: {' '.join(str(c) for c in cmd)}\n{result.stderr}")
   return result
 
 
@@ -113,7 +113,7 @@ def read_txyz(filepath):
   connections = []
 
   # Atom lines are the last `natom` lines (handles title/header on line 1)
-  atom_lines = lines[-natom:] if len(lines) > natom else lines[1:]
+  atom_lines = lines[1:natom + 1] if len(lines) >= natom + 1 else lines[1:]
 
   for line in atom_lines:
     data = line.split()
@@ -275,9 +275,13 @@ def match_and_assign_types(template_file, target_file, output_file=None):
 
 
 # --- Backward-compatible aliases for callers that import these ---
-readTXYZ = lambda f: (
-  lambda n, a, c, t, cn: (a, c, [str(i+1) for i in range(len(a))], t, cn)
-)(*read_txyz(f))
+def readTXYZ(filepath):
+  ''' Backward-compatible wrapper around read_txyz.
+  Returns (atoms, coords, order, types, connections) to match old interface.
+  '''
+  _, atoms, coords, types, connections = read_txyz(filepath)
+  order = [str(i + 1) for i in range(len(atoms))]
+  return atoms, coords, order, types, connections
 
 def txyz2graph(txyz_file):
   ''' Build a molecular graph from a .txyz file (backward-compatible). '''
