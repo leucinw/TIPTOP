@@ -96,8 +96,8 @@ def _matches_residue(template_name, resname):
   base = _get_base_name(template_name)
   if base == resname:
     return True
-  # Amino acid terminal variants: base name has exactly one extra character
-  if base.startswith(resname) and len(base) == len(resname) + 1:
+  # Amino acid terminal variants: base name has exactly one extra uppercase character
+  if base.startswith(resname) and len(base) == len(resname) + 1 and base[-1].isupper():
     return True
   return False
 
@@ -259,7 +259,8 @@ def pdbtxyz(pdb, database, rootdir):
     t = _replace_ext(pdb, '.txyz')
     if not os.path.isfile(t):
       print(resname)
-      if len(open(pdb).readlines()) > 1:
+      pdb_lines = open(pdb).readlines()
+      if len(pdb_lines) > 1:
         if isGlycan:
           cmd = [sys.executable, os.path.join(rootdir, "IP_MatchTXYZ_Glycan.py")] + templates + [pdb.split('.')[0]]
           print(f"Running: {' '.join(cmd)}")
@@ -270,7 +271,7 @@ def pdbtxyz(pdb, database, rootdir):
       else:
         # ion
         if resname not in ['HOH']:
-          line = open(pdb).readlines()[0]
+          line = pdb_lines[0]
           x = float(line[30:38])
           y = float(line[38:46])
           z = float(line[46:54])
