@@ -195,7 +195,7 @@ def splitpdb(pdb, database, rootdir):
       x = float(line[30:38])
       y = float(line[38:46])
       z = float(line[46:54])
-      atom = line[13:17].strip()
+      atom = line[12:16].strip()
       if curresnm in ion_types:
         # Single-atom ion: look up type from template
         line_s = f"{number_atm:>8d}{atom:>5s}{x:12.4f}{y:12.4f}{z:12.4f} {ion_types[curresnm]}\n"
