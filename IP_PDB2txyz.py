@@ -366,33 +366,85 @@ if __name__ == "__main__":
 
 
   if 'A' in mode:
+    print("=" * 60)
+    print("Step A: Preparing PDB and splitting into residue fragments")
+    print("=" * 60)
+    print(f"  Input PDB: {pdb}")
     prepare(pdb)
+    print(f"  Generated TXYZ: {_replace_ext(pdb, '.txyz')}")
     splitpdb(pdb + '_2', database)
+    pdbs_a = np.atleast_1d(np.loadtxt("pdblist", dtype='str'))
+    print(f"  Split into {len(pdbs_a)} residue fragment(s)")
+    print("Step A completed.\n")
+
   if 'B' in mode:
+    print("=" * 60)
+    print("Step B: Converting residue PDB fragments to TINKER XYZ")
+    print("=" * 60)
     pdbs = np.loadtxt("pdblist", dtype='str')
+    print(f"  Processing {len(pdbs)} residue fragment(s)...")
     jobs = []
     with concurrent.futures.ProcessPoolExecutor() as executor:
       args_list = [(p, database, rootdir) for p in pdbs]
       results = [executor.submit(_pdbtxyz_wrapper, args) for args in args_list]
       for f in concurrent.futures.as_completed(results):
         jobs.append(f.result())
+
+    # Check that all expected txyz_2 files were generated
     txyzs = [_replace_ext(p, '.txyz_2') for p in pdbs]
+    missing = []
+    for p, t in zip(pdbs, txyzs):
+      if not os.path.isfile(t):
+        resname = str(p).split(".pdb")[0].split("_")[-1]
+        missing.append((str(p), t, resname))
+
+    if missing:
+      dbdir = os.path.join(rootdir, 'database.PDB2txyz')
+      print("\n" + "!" * 60)
+      print("WARNING: Some residue TXYZ files were NOT generated.")
+      print("!" * 60)
+      print(f"  {len(missing)} of {len(pdbs)} residue(s) failed:\n")
+      for pdb_frag, txyz_frag, resname in missing:
+        print(f"    - {pdb_frag}  (residue: {resname})")
+        print(f"      Expected output: {txyz_frag}")
+      print("\n  To add a missing residue to the database:")
+      print(f"    1. Create a TXYZ template file named <RESNAME>.txyz")
+      print(f"    2. Place it in the appropriate subdirectory under:")
+      print(f"         {dbdir}")
+      print(f"       Available categories: {', '.join(sorted(os.listdir(dbdir)))}")
+      print(f"    3. The template must follow TINKER XYZ format:")
+      print(f"         Line 1: <natom> <title>")
+      print(f"         Lines 2+: <index> <atom_name> <x> <y> <z> <type> <connected_indices...>")
+      print(f"    4. Re-run Step B after adding the template.\n")
+
     with open('txyzlist', 'w') as f:
       for s in txyzs:
         f.write(s + '\n')
+    n_success = len(pdbs) - len(missing)
+    print(f"  Successfully generated {n_success} of {len(pdbs)} TXYZ file(s).")
+    print("Step B completed.\n")
+
   if 'C' in mode:
+    print("=" * 60)
+    print("Step C: Assembling final TINKER XYZ file")
+    print("=" * 60)
     _check_tool("obabel")
     if not os.path.isfile('bio.pdb'):
       txyz = _replace_ext(pdb, '.txyz')
     else:
       txyz = 'bio.txyz'
       pdb = 'bio.pdb'
+    print(f"  Converting {pdb} -> {txyz} via obabel")
     _run(["obabel", "-ipdb", pdb, "-otxyz", "-O", txyz])
     txyzs = np.loadtxt("txyzlist",dtype='str')
+    print(f"  Connecting {len(txyzs)} fragment TXYZ file(s)...")
     connect(txyz,txyzs)
     if os.path.isfile('solvent.txyz'):
+      print("  Including solvent atoms from solvent.txyz")
       with open(txyz + "_2") as src, open("solvent.txyz") as sol, open("final.txyz", "w") as out:
         out.write(src.read())
         out.write(sol.read())
     else:
       shutil.copy(txyz + "_2", "final.txyz")
+    print(f"  Final output: final.txyz")
+    print("Step C completed.\n")
