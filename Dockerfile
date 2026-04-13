@@ -33,6 +33,8 @@ RUN conda create -n tiptop -y -c conda-forge \
         openbabel \
         openmm \
         pdbfixer \
+        networkx \
+        numpy \
     && conda clean -afy
 
 # Make the tiptop env the default for all subsequent RUN/CMD layers
