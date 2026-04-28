@@ -157,21 +157,20 @@ def _atom_element(atom_name):
     return atom_name[0].upper()
 
 
-def _read_solvent_templates(rootdir):
-    ''' Read atom types and connectivity from database.PDB2txyz/solvent/ templates.
+def _read_txyz_templates(directory):
+    ''' Read atom types and connectivity from all .txyz files in a directory.
 
-    Returns dict: canonical_resname -> list of (atom_name, atom_type, bonded_indices)
+    Returns dict: resname -> list of (atom_name, atom_type, bonded_indices)
     where bonded_indices are 0-based indices into the template atom list.
     '''
-    solvent_dir = os.path.join(rootdir, 'database.PDB2txyz', 'solvent')
     templates = {}
-    if not os.path.isdir(solvent_dir):
+    if not os.path.isdir(directory):
         return templates
-    for fname in os.listdir(solvent_dir):
+    for fname in os.listdir(directory):
         if not fname.endswith('.txyz'):
             continue
         resname = fname[:-5]
-        with open(os.path.join(solvent_dir, fname)) as fh:
+        with open(os.path.join(directory, fname)) as fh:
             lines = fh.readlines()
         atoms = []
         for line in lines[1:]:
@@ -185,6 +184,18 @@ def _read_solvent_templates(rootdir):
         if atoms:
             templates[resname] = atoms
     return templates
+
+
+def _read_solvent_templates(rootdir):
+    ''' Read atom types and connectivity from database.PDB2txyz/solvent/ templates. '''
+    solvent_dir = os.path.join(rootdir, 'database.PDB2txyz', 'solvent')
+    return _read_txyz_templates(solvent_dir)
+
+
+def _read_ion_templates(rootdir):
+    ''' Read atom types and connectivity from database.PDB2txyz/ion/ templates. '''
+    ion_dir = os.path.join(rootdir, 'database.PDB2txyz', 'ion')
+    return _read_txyz_templates(ion_dir)
 
 
 # -----------------------------------------------------------------------
@@ -238,9 +249,9 @@ def _split_pdb_biomol_solvent(pdb):
     return biomol_path, solvent_pdb
 
 
-def _build_solvent_txyz(solvent_pdb, solvent_templates):
+def _build_solvent_txyz(solvent_pdb, solvent_templates, ion_templates):
     ''' Build a solvent/ion TXYZ using atom types and connectivity from
-    database templates (database.PDB2txyz/solvent/).
+    database templates (database.PDB2txyz/solvent/ and database.PDB2txyz/ion/).
 
     PDB atoms are matched to template atoms by element symbol.
     Template connectivity is preserved: O bonds to H atoms for water,
@@ -282,12 +293,13 @@ def _build_solvent_txyz(solvent_pdb, solvent_templates):
 
         # Resolve to the canonical template name.
         canonical = SOLVENT_ALIASES.get(resname, resname)
-        template = solvent_templates.get(canonical)
+        template = solvent_templates.get(canonical) or ion_templates.get(canonical)
         if template is None:
             sys.exit(
-                f"Error: no template found for solvent residue '{resname}' "
+                f"Error: no template found for solvent/ion residue '{resname}' "
                 f"(canonical: '{canonical}'). "
-                f"Add '{canonical}.txyz' to database.PDB2txyz/solvent/."
+                f"Add '{canonical}.txyz' to database.PDB2txyz/solvent/ or "
+                f"database.PDB2txyz/ion/."
             )
 
         n_template = len(template)
@@ -372,7 +384,8 @@ def prepare(pdb, database, rootdir):
 
     # 3. Build solvent TXYZ using atom types from database templates
     solvent_templates = _read_solvent_templates(rootdir)
-    solvent_txyz = _build_solvent_txyz(solvent_pdb, solvent_templates)
+    ion_templates = _read_ion_templates(rootdir)
+    solvent_txyz = _build_solvent_txyz(solvent_pdb, solvent_templates, ion_templates)
     if solvent_txyz:
         print(f"  Solvent TXYZ: {solvent_txyz}")
 
